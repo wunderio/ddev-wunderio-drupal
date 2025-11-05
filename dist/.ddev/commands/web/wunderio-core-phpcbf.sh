@@ -1,5 +1,9 @@
 #!/bin/bash
 
+## ExecRaw: true
+## ProjectTypes: drupal9,drupal10,drupal11
+## #ddev-generated
+
 ## Description: Run PHP Code Beautifier and Fixer
 ## Usage: phpcbf [options] [path]
 ## Example: "ddev phpcbf" or "ddev phpcbf web/modules/custom"

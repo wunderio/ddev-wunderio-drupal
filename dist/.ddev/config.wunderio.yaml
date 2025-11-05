@@ -1,3 +1,4 @@
+#ddev-generated
 hooks:
   post-import-db:
     - exec: "$DDEV_APPROOT/.ddev/wunderio/core/_run-scripts.sh hooks-db-post-import.sh"
@@ -13,8 +14,8 @@ hooks:
     - exec-host: ".ddev/wunderio/core/_run-scripts.sh hooks-host-post-start.sh"
     # Script to run on every start.
     - exec: "$DDEV_APPROOT/.ddev/wunderio/core/_run-scripts.sh hooks-web-post-start.sh"
-    # Wunderio/ddev-drupal update check.
-    - exec: "UPDATE_SCRIPT=\"$DDEV_COMPOSER_ROOT/vendor/wunderio/ddev-drupal/scripts/update_check.sh\"; [ -f \"$UPDATE_SCRIPT\" ] && $UPDATE_SCRIPT || true"
+    # Wunderio/ddev-drupal update check (opt-in via WUNDERIO_UPDATE_PROMPT=1).
+    - exec: 'if [ "${WUNDERIO_UPDATE_PROMPT:-}" = "1" ]; then UPDATE_SCRIPT="$DDEV_COMPOSER_ROOT/vendor/wunderio/ddev-drupal/scripts/update_check.sh"; [ -f "$UPDATE_SCRIPT" ] && $UPDATE_SCRIPT || true; fi'
 web_environment:
 # Both this project and wunderio/lando-drupal use the same file
 # at drush/sites/local.site.yml. To make sure that the local alias

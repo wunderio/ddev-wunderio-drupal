@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+## ExecRaw: true
+## ProjectTypes: drupal9,drupal10,drupal11
+## AutocompleteTerms: ["off"]
+## #ddev-generated
 ## Description: Toggle Drupal Twig debugging.
 ## Usage: twig-debug [off]
 ## Example: "ddev twig-debug" to enable or "ddev twig-debug off" to disable

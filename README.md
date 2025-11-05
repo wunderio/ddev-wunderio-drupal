@@ -96,10 +96,10 @@ URL will become example.com.ddev.site.
     ddev config --project-type=drupal10 --docroot=web --project-name=example.com
     ```
 
-2. Install wunderio/ddev-drupal Composer package with DDEV and restart DDEV:
+2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
    ```bash
-   ddev composer require wunderio/ddev-drupal --dev && ddev restart
+   ddev add-on get wunderio/ddev-drupal && ddev restart
    ```
 
 3. Ignore this composer plugin managed files from the repo by adding following entries to .gitignore:
@@ -118,7 +118,26 @@ URL will become example.com.ddev.site.
    git commit
    ```
 
-   Also note that whenever you update wunderio/ddev-drupal package, you need to add everything under .ddev to GIT.
+   Also note that whenever you update wunderio/ddev-drupal add-on, you need to add everything under .ddev to GIT.
+
+### Updating the add-on
+
+- To update the add-on to the latest version:
+
+  ```bash
+  ddev add-on get wunderio/ddev-drupal --update
+  ```
+
+- Optional interactive update prompt can be enabled by setting `WUNDERIO_UPDATE_PROMPT=1` in your environment; it runs on `ddev start`.
+
+### Migration from Composer plugin (legacy)
+
+Previously, this package was installed as a Composer plugin and deployed files into the project. To migrate:
+
+1. Remove legacy managed files from previous versions if present and commit your cleanup.
+2. Install the add-on via `ddev add-on get wunderio/ddev-drupal`.
+3. Verify `.ddev/wunderio/custom/` overrides are preserved.
+4. Commit updated `.ddev/` files.
 
 5. Import database:
 
