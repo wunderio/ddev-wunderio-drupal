@@ -77,8 +77,8 @@ The project includes several automated workflows:
    - Post-start hook that run drush uli
    - Integration with Wunderio's development tools eg grumphp, phpunit
 
-Both custom commands and hooks are scripts under `dist/.ddev/wunderio/core/` folder
-and you can extend them if you copy particular script to `dist/.ddev/wunderio/custom/`.
+Both custom commands and hooks are scripts under `.ddev/wunderio/core/` folder
+and you can extend them if you copy particular script to `.ddev/wunderio/custom/`.
 This folder is never overwritten during autoupdate.
 
 ## Requirements
