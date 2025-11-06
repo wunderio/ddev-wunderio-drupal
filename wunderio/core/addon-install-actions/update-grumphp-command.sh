@@ -34,5 +34,3 @@ if [ -f "$config_file" ] && grep -q "$pattern" "$config_file"; then
     echo "git add $config_file"
     printf "${color_reset}"
 fi
-
-

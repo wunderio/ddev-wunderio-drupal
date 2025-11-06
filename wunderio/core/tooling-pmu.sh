@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Helper script to run pmu, but also create temporary module directory if it doesn't exist.

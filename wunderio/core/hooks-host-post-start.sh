@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Helper script to run host post-start commands.

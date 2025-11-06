@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Synchronise local database with the production environment.

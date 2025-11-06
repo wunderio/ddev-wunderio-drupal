@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 set -eu
 if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x

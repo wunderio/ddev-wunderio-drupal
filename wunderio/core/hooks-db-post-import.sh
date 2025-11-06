@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Helper script to run post-import db hook.

@@ -25,15 +25,17 @@ post_install_actions:
   - |
     #ddev-description: Updating GrumPHP configuration (non-fatal)
     #ddev-warning-exit-code: 1
-    bash .ddev/wunderio/core/scripts/update-grumphp-command.sh || true
-
-removal_actions:
+    bash wunderio/core/scripts/update-grumphp-command.sh || true
   - |
-    #ddev-description: Cleaning up Wunderio DDEV Drupal managed files
-    echo "Removing Wunderio DDEV Drupal managed files (custom overrides preserved)."
-
-yaml_read_files:
-  .gitignore: |
-    # Wunderio DDEV Drupal managed files
-    wunderio/core
-    commands/*/wunderio-core-*
+    echo "Ignore WunderioDDEV add-on core folders and files"
+    # Ensure .gitignore exists
+    touch ../.gitignore
+    # Add lines only if not already present
+    if ! grep -qxF ".ddev/wunderio/" ../.gitignore; then
+      echo "" >> ../.gitignore
+      echo "# Ignore WunderioDDEV add-on core folders and files" >> ../.gitignore
+      echo ".ddev/wunderio/" >> ../.gitignore
+    fi
+    if ! grep -qxF ".ddev/commands/*/wunderio-core-*" ../.gitignore; then
+      echo ".ddev/commands/*/wunderio-core-*" >> ../.gitignore
+    fi

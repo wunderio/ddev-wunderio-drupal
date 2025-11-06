@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-## ExecRaw: true
-## ProjectTypes: drupal9,drupal10,drupal11
-## #ddev-generated
+#ddev-generated
+
 ## Description: Runs drush phpcs commands.
 ## Usage: phpcs
 ## Example: "ddev phpcs"
+## ExecRaw: true
+## ProjectTypes: drupal9,drupal10,drupal11
 
 # Save the existing arguments to an array
 args=("$@")

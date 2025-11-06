@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Helper script to run web commands on first post start.

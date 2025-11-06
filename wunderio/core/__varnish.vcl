@@ -1,3 +1,4 @@
+#ddev-generated
 # NOT USED, __ prefix means it's under evaluation if to be removed.
 # @see: https://github.com/wunderio/charts/blob/master/drupal/templates/varnish-configmap-vcl.yaml
 # The routine when we deliver the HTTP request to the user

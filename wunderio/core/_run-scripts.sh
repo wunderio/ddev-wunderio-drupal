@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 
 #
 # Helper script to run other scripts and allow overriding them by having the
