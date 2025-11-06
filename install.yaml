@@ -2,11 +2,12 @@ name: ddev-drupal
 ddev_version_constraint: ">= v1.23.0"
 
 # Files copied into the project root preserving paths
+# The dist folder structure mirrors the target project structure
 project_files:
-  - dist/.ddev/config.wunderio.yaml
-  - dist/.ddev/commands/
-  - dist/.ddev/wunderio/
-  - dist/drush/sites/local.site.yml
+  - config.wunderio.yaml
+  - commands/
+  - wunderio/
+# - drush/sites/local.site.yml
 
 pre_install_actions:
   - |
@@ -34,6 +35,5 @@ removal_actions:
 yaml_read_files:
   .gitignore: |
     # Wunderio DDEV Drupal managed files
-    .ddev/wunderio/core
-    .ddev/commands/*/wunderio-core-*
-
+    wunderio/core
+    commands/*/wunderio-core-*
