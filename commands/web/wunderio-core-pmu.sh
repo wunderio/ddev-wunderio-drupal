@@ -8,4 +8,4 @@
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
-$DDEV_APPROOT/.ddev/wunderio/core/_run-scripts.sh tooling-pmu.sh "$@"
+/mnt/ddev-global-cache/wunderio/core/_run-scripts.sh tooling-pmu.sh "$@"

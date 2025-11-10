@@ -1,0 +1,5 @@
+#ddev-generated
+services:
+  web:
+    volumes:
+      - ~/.ddev/wunderio:/mnt/ddev-global-cache/wunderio

@@ -18,8 +18,17 @@ script_name="$1"
 # Remove the first argument (the script name) to get the remaining arguments
 shift 1
 
-custom_script=".ddev/wunderio/custom/$script_name"
-core_script=".ddev/wunderio/core/$script_name"
+custom_script="$DDEV_APPROOT/.ddev/wunderio/custom/$script_name"
+
+# Sometimes this script is run on the host, sometimes inside the DDEV container
+# so we need to check the directory to determine where the script is
+# running from. Mostly it's in the container, but at least one time in
+# config.wunderio.yaml we call it on the host via exec-host.
+if [ -d /mnt/ddev-global-cache ]; then
+  core_script="/mnt/ddev-global-cache/wunderio/core/$script_name"
+else
+  core_script="$HOME/.ddev/wunderio/core/$script_name"
+fi
 
 # Check if the custom script exists and is executable
 if [ -x "$custom_script" ]; then

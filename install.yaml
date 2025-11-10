@@ -5,9 +5,12 @@ ddev_version_constraint: ">= v1.23.0"
 # The dist folder structure mirrors the target project structure
 project_files:
   - config.wunderio.yaml
-  - commands/
-  - wunderio/
+  - docker-compose.wunderio.yaml
 # - drush/sites/local.site.yml
+
+global_files:
+  - commands/
+  - wunderio/core/
 
 pre_install_actions:
   - |
@@ -22,20 +25,3 @@ post_install_actions:
     #ddev-description: Finalizing Wunderio DDEV Drupal installation
     echo "Wunderio DDEV Drupal installed. Managed files are marked with #ddev-generated."
     echo "Custom scripts can be added to .ddev/wunderio/custom/ and will be preserved."
-  - |
-    #ddev-description: Updating GrumPHP configuration (non-fatal)
-    #ddev-warning-exit-code: 1
-    bash wunderio/core/addon-install-actions/update-grumphp-command.sh || true
-  - |
-    echo "Ignore WunderioDDEV add-on core folders and files"
-    # Ensure .gitignore exists
-    touch ../.gitignore
-    # Add lines only if not already present
-    if ! grep -qxF ".ddev/wunderio/" ../.gitignore; then
-      echo "" >> ../.gitignore
-      echo "# Ignore WunderioDDEV add-on core folders and files" >> ../.gitignore
-      echo ".ddev/wunderio/" >> ../.gitignore
-    fi
-    if ! grep -qxF ".ddev/commands/*/wunderio-core-*" ../.gitignore; then
-      echo ".ddev/commands/*/wunderio-core-*" >> ../.gitignore
-    fi

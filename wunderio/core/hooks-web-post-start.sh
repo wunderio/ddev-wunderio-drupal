@@ -10,7 +10,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source $DDEV_APPROOT/.ddev/wunderio/core/_helpers.sh
+source /mnt/ddev-global-cache/wunderio/core/_helpers.sh
 
 # Function to check if Drupal is working.
 is_drupal_working() {
