@@ -25,7 +25,7 @@ post_install_actions:
   - |
     #ddev-description: Updating GrumPHP configuration (non-fatal)
     #ddev-warning-exit-code: 1
-    bash wunderio/core/scripts/update-grumphp-command.sh || true
+    bash wunderio/core/addon-install-actions/update-grumphp-command.sh || true
   - |
     echo "Ignore WunderioDDEV add-on core folders and files"
     # Ensure .gitignore exists
