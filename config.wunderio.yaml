@@ -1,7 +1,10 @@
 #ddev-generated
 hooks:
   pre-start:
-    - exec-host: 'if [ ! -d "$HOME/.ddev/wunderio" ]; then ddev add-on get ./ddev-wunderio-drupal; fi'
+    # Install the wunderio/ddev-wunderio-drupal add-on if it's not already
+    # installed. Developers don't need to do this manually. They just need to
+    # clone the project and run ddev start.
+    - exec-host: 'if [ ! -d "$HOME/.ddev/wunderio" ]; then ddev add-on get wunderio/ddev-wunderio-drupal; fi'
   post-import-db:
     - exec: "/mnt/ddev-global-cache/wunderio/core/_run-scripts.sh hooks-db-post-import.sh"
   post-restore-snapshot:
