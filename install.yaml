@@ -1,5 +1,5 @@
-name: ddev-drupal
-ddev_version_constraint: ">= v1.23.0"
+name: ddev-wunderio-drupal
+ddev_version_constraint: ">= v1.24.3"
 
 # Files copied into the project root preserving paths
 # The dist folder structure mirrors the target project structure
@@ -11,14 +11,6 @@ project_files:
 global_files:
   - commands/
   - wunderio/core/
-
-pre_install_actions:
-  - |
-    #ddev-description: Checking DDEV environment
-    if [ -z "${DDEV_APPROOT+x}" ]; then
-      echo "Error: DDEV version is too old or not detected (missing DDEV_APPROOT). Please update DDEV."
-      exit 1
-    fi
 
 post_install_actions:
   - |
