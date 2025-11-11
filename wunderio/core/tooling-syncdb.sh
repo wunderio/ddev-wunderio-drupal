@@ -12,7 +12,8 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source .ddev/wunderio/core/_helpers.sh
+# This is run in host context, so we need to use the home directory.
+source $HOME/.ddev/wunderio/core/_helpers.sh
 
 sql_file="prod-syncdb-$(date +'%Y-%m-%d').sql"
 
