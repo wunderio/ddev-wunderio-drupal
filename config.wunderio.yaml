@@ -1,5 +1,7 @@
 #ddev-generated
 hooks:
+  pre-start:
+    - exec-host: 'if [ ! -d "$HOME/.ddev/wunderio" ]; then ddev add-on get ./ddev-wunderio-drupal; fi'
   post-import-db:
     - exec: "/mnt/ddev-global-cache/wunderio/core/_run-scripts.sh hooks-db-post-import.sh"
   post-restore-snapshot:
