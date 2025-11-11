@@ -99,13 +99,21 @@ URL will become example.com.ddev.site.
 2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
    ```bash
-   ddev add-on get wunderio/ddev-drupal && ddev restart
+   ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
    ```
 
-3. Ignore this composer plugin managed files from the repo by adding following entries to .gitignore:
+3. Optionally if you have GrumpPHP installed, update grumphp.yml:
+
   ```
-  .ddev/wunderio/core
-  .ddev/commands/*/wunderio-core-*
+    grumphp:
+      git_hook_variables:
+        EXEC_GRUMPHP_COMMAND: 'ddev php
+  ```
+
+  and then re-init the hook:
+
+  ```bash
+  ddev grumphp git:init
   ```
 
 4. Add changes to GIT (note that below command uses -p, so you need to say 'y'es or 'n'o if it asks what to commit):
@@ -113,8 +121,7 @@ URL will become example.com.ddev.site.
    ```bash
    git add .ddev/ &&
    git add drush/sites/ &&
-   git add composer.lock &&
-   git add -p composer.json web/sites/default/settings.php grumphp.yml &&
+   git add -p web/sites/default/settings.php grumphp.yml &&
    git commit
    ```
 
