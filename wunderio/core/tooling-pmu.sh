@@ -9,7 +9,8 @@ set -u
 if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
-source /mnt/ddev-global-cache/wunderio/core/_helpers.sh
+
+source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
 
 if [[ "$#" -lt 1 ]]; then
   echo "Usage: ddev pmu <module1> <module2> ..."

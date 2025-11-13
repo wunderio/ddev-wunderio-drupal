@@ -9,7 +9,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source /mnt/ddev-global-cache/wunderio/core/_helpers.sh
+source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
 
 cd $DDEV_COMPOSER_ROOT
 

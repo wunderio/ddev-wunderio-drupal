@@ -11,6 +11,12 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
+# This script when ran in host, does not have the WUNDERIO_GLOBAL_CACHE_ROOT and
+# WUNDERIO_GLOBAL_CACHE_WUNDERIO environment variables set. So we need to set
+# them here.
+GLOBAL_CACHE_ROOT="${WUNDERIO_GLOBAL_CACHE_ROOT:-/mnt/ddev-global-cache}"
+GLOBAL_CACHE_WUNDERIO="${WUNDERIO_GLOBAL_CACHE_WUNDERIO:-$GLOBAL_CACHE_ROOT/wunderio}"
+
 # Expose helpers to tooling.
 source "$(dirname "${BASH_SOURCE[0]}")/_helpers.sh"
 
@@ -24,8 +30,8 @@ custom_script="$DDEV_APPROOT/.ddev/wunderio/custom/$script_name"
 # so we need to check the directory to determine where the script is
 # running from. Mostly it's in the container, but at least one time in
 # config.wunderio.yaml we call it on the host via exec-host.
-if [ -d /mnt/ddev-global-cache ]; then
-  core_script="/mnt/ddev-global-cache/wunderio/core/$script_name"
+if [ -d "$GLOBAL_CACHE_ROOT" ]; then
+  core_script="$GLOBAL_CACHE_WUNDERIO/core/$script_name"
 else
   core_script="$HOME/.ddev/wunderio/core/$script_name"
 fi
