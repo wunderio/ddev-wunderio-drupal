@@ -1,0 +1,19 @@
+name: ddev-wunderio-drupal
+ddev_version_constraint: ">= v1.24.3"
+
+# Files copied into the project root preserving paths
+# The dist folder structure mirrors the target project structure
+project_files:
+  - config.wunderio.yaml
+  - docker-compose.wunderio.yaml
+# - drush/sites/local.site.yml
+
+global_files:
+  - commands/
+  - wunderio/core/
+
+post_install_actions:
+  - |
+    #ddev-description: Finalizing Wunderio DDEV Drupal installation
+    echo "Wunderio DDEV Drupal installed. Managed files are marked with #ddev-generated."
+    echo "Custom scripts can be added to .ddev/wunderio/custom/ and will be preserved."

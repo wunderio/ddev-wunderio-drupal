@@ -77,9 +77,10 @@ The project includes several automated workflows:
    - Post-start hook that run drush uli
    - Integration with Wunderio's development tools eg grumphp, phpunit
 
-Both custom commands and hooks are scripts under `dist/.ddev/wunderio/core/` folder
-and you can extend them if you copy particular script to `dist/.ddev/wunderio/custom/`.
-This folder is never overwritten during autoupdate.
+Both custom commands and hooks are scripts under `~/.ddev/wunderio/core/` folder
+(note it's your host home folder) and you can extend them if you copy particular
+script to your project `.ddev/wunderio/custom/` folder. This folder is never
+overwritten during autoupdate.
 
 ## Requirements
 
@@ -96,16 +97,24 @@ URL will become example.com.ddev.site.
     ddev config --project-type=drupal10 --docroot=web --project-name=example.com
     ```
 
-2. Install wunderio/ddev-drupal Composer package with DDEV and restart DDEV:
+2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
    ```bash
-   ddev composer require wunderio/ddev-drupal --dev && ddev restart
+   ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
    ```
 
-3. Ignore this composer plugin managed files from the repo by adding following entries to .gitignore:
+3. Optionally if you have GrumpPHP installed, update grumphp.yml:
+
   ```
-  .ddev/wunderio/core
-  .ddev/commands/*/wunderio-core-*
+    grumphp:
+      git_hook_variables:
+        EXEC_GRUMPHP_COMMAND: 'ddev php
+  ```
+
+  and then re-init the hook:
+
+  ```bash
+  ddev grumphp git:init
   ```
 
 4. Add changes to GIT (note that below command uses -p, so you need to say 'y'es or 'n'o if it asks what to commit):
@@ -113,12 +122,30 @@ URL will become example.com.ddev.site.
    ```bash
    git add .ddev/ &&
    git add drush/sites/ &&
-   git add composer.lock &&
-   git add -p composer.json web/sites/default/settings.php grumphp.yml &&
+   git add -p web/sites/default/settings.php grumphp.yml &&
    git commit
    ```
 
-   Also note that whenever you update wunderio/ddev-drupal package, you need to add everything under .ddev to GIT.
+   Also note that whenever you update wunderio/ddev-drupal add-on, you need to add everything under .ddev to GIT.
+
+### Updating the add-on
+
+- To update the add-on to the latest version:
+
+  ```bash
+  ddev add-on get wunderio/ddev-drupal --update
+  ```
+
+- Optional interactive update prompt can be enabled by setting `WUNDERIO_UPDATE_PROMPT=1` in your environment; it runs on `ddev start`.
+
+### Migration from Composer plugin (legacy)
+
+Previously, this package was installed as a Composer plugin and deployed files into the project. To migrate:
+
+1. Remove legacy managed files from previous versions if present and commit your cleanup.
+2. Install the add-on via `ddev add-on get wunderio/ddev-drupal`.
+3. Verify `.ddev/wunderio/custom/` overrides are preserved.
+4. Commit updated `.ddev/` files.
 
 5. Import database:
 
