@@ -11,9 +11,9 @@ it's advisable to use domain name as your project name as that's used for
 the subdomain of ddev.site eg if project name is example.com, then localhost
 URL will become example.com.ddev.site.
 
-    ```bash
-    ddev config --project-type=drupal10 --docroot=web --project-name=example.com
-    ```
+   ```bash
+   ddev config --project-type=drupal10 --docroot=web --project-name=example.com
+   ```
 
 2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
