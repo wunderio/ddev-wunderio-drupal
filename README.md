@@ -7,7 +7,7 @@ scripts to enhance your Drupal development workflow.
 ## Installation
 
 1. Initialize your Drupal 10 project. Project name parameter is optional, but
-it's advisable to use domain name as your project name as that's used for for
+it's advisable to use domain name as your project name as that's used for
 the subdomain of ddev.site eg if project name is example.com, then localhost
 URL will become example.com.ddev.site.
 
@@ -21,7 +21,7 @@ URL will become example.com.ddev.site.
    ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
    ```
 
-3. Optionally if you have GrumpPHP installed, update grumphp.yml:
+3. Optionally if you have GrumPHP installed, update grumphp.yml:
 
    ```
    grumphp:
