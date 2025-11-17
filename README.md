@@ -23,17 +23,17 @@ URL will become example.com.ddev.site.
 
 3. Optionally if you have GrumpPHP installed, update grumphp.yml:
 
-  ```
-    grumphp:
-      git_hook_variables:
-        EXEC_GRUMPHP_COMMAND: 'ddev php
-  ```
+   ```
+   grumphp:
+     git_hook_variables:
+       EXEC_GRUMPHP_COMMAND: 'ddev php
+   ```
 
-  and then re-init the hook:
+   and then re-init the hook:
 
-  ```bash
-  ddev grumphp git:init
-  ```
+   ```bash
+   ddev grumphp git:init
+   ```
 
 4. Add changes to GIT (note that below command uses -p, so you need to say 'y'es or 'n'o if it asks what to commit):
 
@@ -83,7 +83,7 @@ URL will become example.com.ddev.site.
   ```bash
   ddev regenerate-phpunit-config
   ```
-- `codecept`: Runs codeception commands. Remember to define 'output: tests/_output' in codeception.yml as one of the paths.
+- `codecept`: Runs codeception commands. Remember to define `output: tests/_output` in codeception.yml as one of the paths.
   ```bash
   ddev codecept
   ```
