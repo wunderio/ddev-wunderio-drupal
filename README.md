@@ -4,6 +4,58 @@ This project extends the standard [DDEV](https://ddev.com/) setup with additiona
 designed for Drupal development. It provides a set of custom commands, configurations, and automation
 scripts to enhance your Drupal development workflow.
 
+## Installation
+
+1. Initialize your Drupal 10 project. Project name parameter is optional, but
+it's advisable to use domain name as your project name as that's used for for
+the subdomain of ddev.site eg if project name is example.com, then localhost
+URL will become example.com.ddev.site.
+
+    ```bash
+    ddev config --project-type=drupal10 --docroot=web --project-name=example.com
+    ```
+
+2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
+
+   ```bash
+   ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
+   ```
+
+3. Optionally if you have GrumpPHP installed, update grumphp.yml:
+
+  ```
+    grumphp:
+      git_hook_variables:
+        EXEC_GRUMPHP_COMMAND: 'ddev php
+  ```
+
+  and then re-init the hook:
+
+  ```bash
+  ddev grumphp git:init
+  ```
+
+4. Add changes to GIT (note that below command uses -p, so you need to say 'y'es or 'n'o if it asks what to commit):
+
+   ```bash
+   git add .ddev/ &&
+   git add drush/sites/ &&
+   git add -p web/sites/default/settings.php grumphp.yml &&
+   git commit
+   ```
+
+   Also note that whenever you update wunderio/ddev-drupal add-on, you need to add everything under .ddev to GIT.
+
+### Updating the add-on
+
+- To update the add-on to the latest version:
+
+  ```bash
+  ddev add-on get wunderio/ddev-drupal --update
+  ```
+
+- Optional interactive update prompt can be enabled by setting `WUNDERIO_UPDATE_PROMPT=1` in your environment; it runs on `ddev start`.
+
 ## Features
 
 ### Custom DDEV Commands
@@ -85,58 +137,6 @@ overwritten during autoupdate.
 ## Requirements
 
 - [DDEV](https://ddev.com/)
-
-## Installation
-
-1. Initialize your Drupal 10 project. Project name parameter is optional, but
-it's advisable to use domain name as your project name as that's used for for
-the subdomain of ddev.site eg if project name is example.com, then localhost
-URL will become example.com.ddev.site.
-
-    ```bash
-    ddev config --project-type=drupal10 --docroot=web --project-name=example.com
-    ```
-
-2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
-
-   ```bash
-   ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
-   ```
-
-3. Optionally if you have GrumpPHP installed, update grumphp.yml:
-
-  ```
-    grumphp:
-      git_hook_variables:
-        EXEC_GRUMPHP_COMMAND: 'ddev php
-  ```
-
-  and then re-init the hook:
-
-  ```bash
-  ddev grumphp git:init
-  ```
-
-4. Add changes to GIT (note that below command uses -p, so you need to say 'y'es or 'n'o if it asks what to commit):
-
-   ```bash
-   git add .ddev/ &&
-   git add drush/sites/ &&
-   git add -p web/sites/default/settings.php grumphp.yml &&
-   git commit
-   ```
-
-   Also note that whenever you update wunderio/ddev-drupal add-on, you need to add everything under .ddev to GIT.
-
-### Updating the add-on
-
-- To update the add-on to the latest version:
-
-  ```bash
-  ddev add-on get wunderio/ddev-drupal --update
-  ```
-
-- Optional interactive update prompt can be enabled by setting `WUNDERIO_UPDATE_PROMPT=1` in your environment; it runs on `ddev start`.
 
 ### Migration from Composer plugin (legacy)
 
