@@ -50,9 +50,9 @@ fi
 
 # --- 3. Parse Alias Details using yq ---
 # Dynamically build the yq query path using the alias key ("prod").
-prod_ssh_user=$(echo "$alias_details" | ddev yq ".\".@self.${ALIAS_KEY}\".user" )
-prod_ssh_host=$(echo "$alias_details" | ddev yq ".\".@self.${ALIAS_KEY}\".host" )
-prod_ssh_options=$(echo "$alias_details" | ddev yq ".\".@self.${ALIAS_KEY}\".ssh.options" )
+prod_ssh_user=$(ddev yq '."@self.'"$ALIAS_KEY"'".user' <<< "$alias_details")
+prod_ssh_host=$(ddev yq '."@self.'"$ALIAS_KEY"'".host' <<< "$alias_details")
+prod_ssh_options=$(ddev yq '."@self.'"$ALIAS_KEY"'".ssh.options' <<< "$alias_details")
 
 # --- 4. Perform the Database Dump and Import ---
 display_status_message "Dumping database from '$SITE_ALIAS'..."
