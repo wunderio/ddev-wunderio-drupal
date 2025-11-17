@@ -6,6 +6,12 @@ scripts to enhance your Drupal development workflow.
 
 ## Installation
 
+### Requirements
+
+- [DDEV >= 1.24.3](https://ddev.com/)
+
+### Steps
+
 1. Initialize your Drupal 10 project. Project name parameter is optional, but
 it's advisable to use domain name as your project name as that's used for
 the subdomain of ddev.site eg if project name is example.com, then localhost
@@ -133,10 +139,6 @@ Both custom commands and hooks are scripts under `~/.ddev/wunderio/core/` folder
 (note it's your host home folder) and you can extend them if you copy particular
 script to your project `.ddev/wunderio/custom/` folder. This folder is never
 overwritten during autoupdate.
-
-## Requirements
-
-- [DDEV](https://ddev.com/)
 
 ### Migration from Composer plugin (legacy)
 
