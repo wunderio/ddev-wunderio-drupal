@@ -79,7 +79,11 @@ URL will become example.com.ddev.site.
   ```bash
   ddev phpunit
   ```
-- `codecept`: Runs codeception commands
+- `regenerate-phpunit-config`: Regenerates fresh PHPUnit configuration. Run this if you don't have phpunit configured in your project.
+  ```bash
+  ddev regenerate-phpunit-config
+  ```
+- `codecept`: Runs codeception commands. Remember to define 'output: tests/_output' in codeception.yml as one of the paths.
   ```bash
   ddev codecept
   ```
@@ -90,10 +94,6 @@ URL will become example.com.ddev.site.
 - `phpcs`: Runs PHPcs commands
   ```bash
   ddev phpcs
-  ```
-- `regenerate-phpunit-config`: Regenerates fresh PHPUnit configuration
-  ```bash
-  ddev regenerate-phpunit-config
   ```
 - `syncdb`: Synchronizes local database with production.
   For production you should have a prod alias set in drush/sites/self.site.yml
