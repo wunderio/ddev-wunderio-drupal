@@ -89,7 +89,7 @@ URL will become example.com.ddev.site.
   ```bash
   ddev regenerate-phpunit-config
   ```
-- `codecept`: Runs codeception commands. Remember to define `output: tests/_output` in codeception.yml as one of the paths.
+- `codecept`: Runs codeception commands.
   ```bash
   ddev codecept
   ```
