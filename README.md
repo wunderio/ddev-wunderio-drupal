@@ -26,7 +26,7 @@ URL will become example.com.ddev.site.
    ```
    grumphp:
      git_hook_variables:
-       EXEC_GRUMPHP_COMMAND: 'ddev php
+       EXEC_GRUMPHP_COMMAND: 'ddev php'
    ```
 
    and then re-init the hook:
