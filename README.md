@@ -101,10 +101,11 @@ URL will become example.com.ddev.site.
   ```bash
   ddev phpcs
   ```
-- `syncdb`: Synchronizes local database with production.
-  For production you should have a prod alias set in drush/sites/self.site.yml
+- `syncdb`: Synchronizes local database from desired environment.
+  You should have aliases set in drush/sites/self.site.yml
   ```bash
-  ddev syncdb
+  ddev syncdb      # Will give error as environment is not set
+  ddev syncdb prod # Will fetch database from production.
   ```
 - `yq`: Runs [yq](https://mikefarah.gitbook.io/yq) commands (YAML processor)
   It's available inside DDEV, but we expose it to host because why not :). It's required in syncdb script, but it could prove useful in day to day work.
