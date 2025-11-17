@@ -15,10 +15,10 @@ fi
 
 # --- 1. Validate Input ---
 # Check if an alias was provided as an argument.
-if [[ -z "$1" ]]; then
+if [[ -z "${1:-}" ]]; then
   echo "Error: No site alias name provided."
-  echo "Usage: $0 your_alias_name"
-  echo "Example: $0 prod"
+  echo "Usage: ddev syncdb your_alias_name"
+  echo "Example: ddev syncdb prod"
   exit 1
 fi
 
