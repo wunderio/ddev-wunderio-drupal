@@ -2,9 +2,9 @@
 
 #ddev-generated
 
-## Description: Runs PHPUnit commands.
-## Usage: phpunit
-## Example: "ddev phpunit"
+## Description: Runs PHPStan commands.
+## Usage: phpstan
+## Example: "ddev phpstan"
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
