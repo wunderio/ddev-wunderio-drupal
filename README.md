@@ -101,6 +101,10 @@ URL will become example.com.ddev.site.
   ```bash
   ddev phpcs
   ```
+- `phpstan`: Runs PHPStan commands. Usually, the directory to be scanned is web/modules/custom or a module in the said directory.
+  ```bash
+  ddev phpstan analyze <directory-or-module-to-be-scanned>
+  ```
 - `syncdb`: Synchronizes local database from desired environment.
   You should have aliases set in drush/sites/self.site.yml
   ```bash
