@@ -101,6 +101,10 @@ URL will become example.com.ddev.site.
   ```bash
   ddev phpcs
   ```
+  - `phpstan`: Runs PHPStan commands
+  ```bash
+  ddev phpstan
+  ```
 - `syncdb`: Synchronizes local database from desired environment.
   You should have aliases set in drush/sites/self.site.yml
   ```bash
