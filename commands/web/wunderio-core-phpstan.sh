@@ -8,13 +8,6 @@
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
-#
-# Runs PHPStan that scans the whole codebase and looks for both obvious & tricky bugs.
-#
-# Usage:
-# ddev phpstan
-# See: https://phpstan.org/
-
 # Check that PHPStan is installed.
 if [ ! -f "$DDEV_COMPOSER_ROOT/vendor/bin/phpstan" ]; then
   echo "Composer binaries for PHPStan missing; exiting early."
