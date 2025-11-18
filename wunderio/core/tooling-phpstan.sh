@@ -7,7 +7,7 @@
 
 set -eu
 if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
-    set -x
+  set -x
 fi
 
 source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
