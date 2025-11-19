@@ -19,13 +19,13 @@ ADDON_NAME="wunderio/ddev-wunderio-drupal"
 
 # 2. Exit early if we have already checked today.
 # We use a cache file to avoid checking multiple times in the same day.
-# We minor startup time and reduce API calls to GitHub.
+# We minimize startup time and reduce API calls to GitHub.
 CACHE_FILE="/tmp/ddev_check_$(echo "$ADDON_NAME" | tr / _).txt"
 TODAY=$(date +%Y-%m-%d)
 if [ -f "$CACHE_FILE" ]; then
     # Read the date from the file. "|| true" prevents exit on EOF if file is empty
     read -r CACHED_DATE < "$CACHE_FILE" || true
-    if [ "$CACHED_DATE" == "$TODAY" ]; then
+    if [ "$CACHED_DATE" = "$TODAY" ]; then
         # We already ran the check today. Exit silently.
         exit 0
     fi
