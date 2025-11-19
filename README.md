@@ -60,8 +60,6 @@ URL will become example.com.ddev.site.
   ddev add-on get wunderio/ddev-drupal --update
   ```
 
-- Optional interactive update prompt can be enabled by setting `WUNDERIO_UPDATE_PROMPT=1` in your environment; it runs on `ddev start`.
-
 ## Features
 
 ### Custom DDEV Commands
