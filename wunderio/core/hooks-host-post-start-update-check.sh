@@ -74,4 +74,3 @@ fi
 echo "$TODAY" > "$CACHE_FILE"
 
 exit 0
-
