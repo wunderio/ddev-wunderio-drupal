@@ -30,8 +30,6 @@ if [ -f "$CACHE_FILE" ]; then
         exit 0
     fi
 fi
-# Mark today as checked immediately
-echo "$TODAY" > "$CACHE_FILE"
 
 # 3. Get the Installed Version
 # We use --json-output. DDEV returns JSON objects; the actual list is usually in the "raw" field.
@@ -72,4 +70,8 @@ if [ "$LOCAL_VERSION" != "$REMOTE_VERSION" ]; then
     echo "ddev add-on get $ADDON_NAME"
 fi
 
+# Mark today as checked.
+echo "$TODAY" > "$CACHE_FILE"
+
 exit 0
+
