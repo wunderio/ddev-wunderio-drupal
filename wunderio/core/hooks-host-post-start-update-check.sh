@@ -67,7 +67,10 @@ if [ "$LOCAL_VERSION" != "$REMOTE_VERSION" ]; then
     echo "------------------------------------------------"
     echo "⚠️  UPDATE AVAILABLE!"
     echo "To update, run:"
-    echo "ddev add-on get $ADDON_NAME"
+    echo "ddev add-on get $ADDON_NAME && ddev restart"
+    echo "Don't forget to add changes to GIT and commit them:"
+    echo "git add .ddev/"
+    echo "------------------------------------------------"
 fi
 
 # Mark today as checked.
