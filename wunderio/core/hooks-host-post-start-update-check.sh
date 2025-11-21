@@ -58,12 +58,14 @@ if [ -z "$REMOTE_VERSION" ] || [ "$REMOTE_VERSION" == "null" ]; then
 fi
 
 # 5. Compare Versions
-# Only print the header/footer if we are actually notifying the user
 if [ "$LOCAL_VERSION" != "$REMOTE_VERSION" ]; then
+    RELEASE_URL="https://github.com/$ADDON_NAME/releases"
+
     echo "------------------------------------------------"
     echo "📦 Addon: $ADDON_NAME"
     echo "🏠 Local Version:  $LOCAL_VERSION"
     echo "☁️  Latest Version: $REMOTE_VERSION"
+    echo "🔗 Release Notes:  $RELEASE_URL"
     echo "------------------------------------------------"
     echo "⚠️  UPDATE AVAILABLE!"
     echo "To update, run:"
