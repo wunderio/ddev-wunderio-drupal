@@ -22,10 +22,6 @@ hooks:
     # Update check.
     - exec-host: "~/.ddev/wunderio/core/hooks-host-post-start-update-check.sh"
 web_environment:
-# Both this project and wunderio/lando-drupal use the same file
-# at drush/sites/local.site.yml. To make sure that the local alias
-# is working, we need to set the same environment variables here.
-- LANDO_WEBROOT=$DDEV_COMPOSER_ROOT/$DDEV_DOCROOT
 - WUNDERIO_GLOBAL_CACHE_ROOT=/mnt/ddev-global-cache
 - WUNDERIO_GLOBAL_CACHE_WUNDERIO=/mnt/ddev-global-cache/wunderio
 # When Mutagen is enabled (which it is by default in DDEV v1.19+),
