@@ -82,7 +82,7 @@ ${DIFF}"
 echo "🤖 Generating commit message using ${MODEL}..."
 JQ_ERROR_FILE=$(mktemp)
 # Build JSON payload with jq (handles escaping properly)
-# Pass variables via env (rathan than passing them as arguments), read them in jq using $ENV
+# Pass variables via env (rather than passing them as arguments), read them in jq using $ENV
 # This is more robust and avoids issues with argument length limits.
 PAYLOAD=$(
   model="$MODEL" \
