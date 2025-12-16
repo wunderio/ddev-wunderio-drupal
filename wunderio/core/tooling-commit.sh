@@ -22,29 +22,29 @@ API_KEY="${API_KEY:-}"
 DEFAULT_MODEL="google_genai.gemini-2.5-flash"
 MODEL="${1:-$DEFAULT_MODEL}"
 
-# Validate environment variables
+# Validate environment variables.
 if [ -z "$API_URL" ]; then
-    echo "❌ Error: API_URL environment variable not set"
+    display_error_message "❌ Error: API_URL environment variable not set"
     echo "Set it in your project root .env file, then run 'ddev restart'."
     echo ""
     echo "Example:"
     echo "  echo 'API_URL=https://your-api-url' >> .env"
-    exit 1
+    exit 0
 fi
 
 if [ -z "$API_KEY" ]; then
-    echo "❌ Error: API_KEY environment variable not set"
+    display_error_message "❌ Error: API_KEY environment variable not set"
     echo "Set it in your project root .env file, then run 'ddev restart'."
     echo ""
     echo "Example:"
     echo "  echo 'API_KEY=your-api-key' >> .env"
-    exit 1
+    exit 0
 fi
 
 # Check for staged changes.
 if git diff --cached --quiet; then
-    echo "No staged changes to commit. Stage files with 'git add' first."
-    exit 1
+    display_status_message "No staged changes to commit. Stage files with 'git add' first."
+    exit 0
 fi
 
 # Read commit message instructions
@@ -56,13 +56,13 @@ else
     COMMIT_INSTRUCTIONS="Follow standard git commit message conventions."
 fi
 
-# Gather git context
+# Gather git context.
 BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no tags")
 STAT=$(git diff --cached --stat)
 DIFF=$(git diff --cached -M -w)
 
-# Build context
+# Build context.
 CONTEXT="Branch: ${BRANCH}
 Latest tag: ${TAG}
 
@@ -135,8 +135,8 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     git commit -m "$COMMIT_MSG"
-    echo "✅ Committed successfully!"
+    drupal_display_status_message "✅ Committed successfully!"
 else
-    echo "❌ Commit cancelled"
-    exit 1
+    drupal_display_status_message "❌ Commit cancelled"
+    exit 0
 fi
