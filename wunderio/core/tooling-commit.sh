@@ -62,6 +62,16 @@ TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no tags")
 STAT=$(git diff --cached --stat)
 DIFF=$(git diff --cached -M -w)
 
+# Truncate diff if it's too large to avoid exceeding API token limits.
+# Most APIs have input token limits, and very large diffs can cause failures.
+MAX_DIFF_SIZE=10000
+DIFF_LENGTH=${#DIFF}
+if [ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
+    display_error_message "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
+    DIFF="${DIFF:0:$MAX_DIFF_SIZE}"
+    DIFF="${DIFF}"$'\n'$'\n'"[... diff truncated due to size ...]"
+fi
+
 # Build context.
 CONTEXT="Branch: ${BRANCH}
 Latest tag: ${TAG}
@@ -104,8 +114,10 @@ RESPONSE=$(curl -s -X POST "${API_URL}/chat/completions" \
 COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
 
 if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
-    echo "❌ Error: Failed to generate commit message"
-    echo "API Response: $RESPONSE"
+    display_error_message "❌ Error: Failed to generate commit message"
+    echo "API Response (truncated, may contain sensitive info):"
+    echo "${RESPONSE:0:200}..."
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
     exit 1
 fi
 
@@ -137,6 +149,6 @@ if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     git commit -m "$COMMIT_MSG"
     display_status_message "✅ Committed successfully!"
 else
-    display_status_message "❌ Commit cancelled"
+    echo "Commit cancelled"
     exit 0
 fi
