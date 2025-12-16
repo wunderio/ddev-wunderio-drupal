@@ -83,26 +83,46 @@ ${STAT}
 ${DIFF}"
 
 echo "🤖 Generating commit message using ${MODEL}..."
+JQ_ERROR_FILE=$(mktemp)
 # Build JSON payload with jq (handles escaping properly)
-PAYLOAD=$(jq -n \
-  --arg model "$MODEL" \
-  --arg context "$CONTEXT" \
-  --arg instructions "$COMMIT_INSTRUCTIONS" \
+# Pass variables via env (rathan than passing them as arguments), read them in jq using $ENV
+# This is more robust and avoids issues with argument length limits.
+PAYLOAD=$(
+  model="$MODEL" \
+  context="$CONTEXT" \
+  instructions="$COMMIT_INSTRUCTIONS" \
+  jq -n \
   '{
-    model: $model,
+    model: $ENV.model,
     messages: [
       {
         role: "system",
-        content: ("You are a git commit message generator. Follow these rules:\n\n" + $instructions + "\n\nCRITICAL: Always include the ticket ID from the branch name followed by a colon and space, then a descriptive summary (e.g., \"THLP-116: add login button\"). Use present tense, imperative mood. First line max 72 chars. Output ONLY the commit message, nothing else.")
+        content: ("You are a git commit message generator. Follow these rules:\n\n" + $ENV.instructions + "\n\nCRITICAL: ...")
       },
       {
         role: "user",
-        content: ("Analyze these changes and generate a commit message in the format TICKET-ID: description:\n\n" + $context)
+        content: ("Analyze these changes and generate a commit message in the format TICKET-ID: description:\n\n" + $ENV.context)
       }
     ],
     temperature: 0.3,
     max_tokens: 2000
-  }')
+  }' 2>"$JQ_ERROR_FILE"
+)
+JQ_EXIT_CODE=$?
+JQ_ERROR=$(cat "$JQ_ERROR_FILE" 2>/dev/null || echo "")
+# Ensure the file is deleted even if the script crashes or is killed.
+trap 'rm -f "$JQ_ERROR_FILE"' EXIT
+
+# Validate that jq succeeded and produced valid JSON
+if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
+    display_error_message "❌ Error: Failed to build API request payload"
+    if [ $JQ_EXIT_CODE -ne 0 ] && [ -n "$JQ_ERROR" ]; then
+        echo "jq error: $JQ_ERROR"
+    elif [ $JQ_EXIT_CODE -ne 0 ]; then
+        echo "jq command failed (exit code: $JQ_EXIT_CODE). This may indicate invalid input data."
+    fi
+    exit 1
+fi
 
 # Call API
 RESPONSE=$(curl -s -X POST "${API_URL}/chat/completions" \
