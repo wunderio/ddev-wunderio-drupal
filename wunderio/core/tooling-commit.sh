@@ -135,8 +135,8 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     git commit -m "$COMMIT_MSG"
-    drupal_display_status_message "✅ Committed successfully!"
+    display_status_message "✅ Committed successfully!"
 else
-    drupal_display_status_message "❌ Commit cancelled"
+    display_status_message "❌ Commit cancelled"
     exit 0
 fi
