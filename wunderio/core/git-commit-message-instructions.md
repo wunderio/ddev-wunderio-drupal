@@ -36,9 +36,10 @@ MET-123: implement user authentication flow
 
 ## Rules for Commit Messages
 
-### 1. Ticket Number
-- Always begin the commit message with the ticket number (e.g., `MET-123`).
-- Infer the ticket number from the branch name when possible.
+### 1. Ticket or Issue Identifier
+- Always begin the commit message with the ticket or issue identifier (e.g., `MET-123` or `#30`).
+- Infer the identifier from the branch name when possible.
+- **Do not strip leading characters** that are part of the identifier. For example, if the branch is `feature/#30-Add-AI-tool-ddev-commit`, the commit message must start with `#30: ...`, not `30: ...`.
 - Format: `TICKET-ID: message`
 
 ### 2. Summary Line
