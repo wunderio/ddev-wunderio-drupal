@@ -114,6 +114,19 @@ URL will become example.com.ddev.site.
   ```bash
   ddev yq
   ```
+- `commit`: Generates AI-powered commit messages from staged changes using the configured API.
+  The command analyzes your staged changes and branch name to generate commit messages following
+  the project's commit message format (ticket ID prefix, present tense, imperative mood).
+  Requires `API_URL` and `API_KEY` environment variables to be configured.
+  ```bash
+  ddev commit                    # Uses default model (google_genai.gemini-2.5-flash)
+  ddev commit gpt-4o-mini       # Uses specified model
+  ```
+  **Setup:** Configure the API credentials in your DDEV config:
+  ```bash
+  ddev config --web-environment-add=API_URL=https://your-api-url
+  ddev config --web-environment-add=API_KEY=your-api-key
+  ```
 
 ### Enhanced Configuration
 

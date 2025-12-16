@@ -1,0 +1,134 @@
+#!/bin/bash
+#ddev-generated
+
+#
+# Helper script to generate AI commit message from staged changes.
+#
+
+set -eu
+if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
+    set -x
+fi
+
+source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+
+# Configuration from environment.
+API_URL="${API_URL:-}"
+API_KEY="${API_KEY:-}"
+DEFAULT_MODEL="google_genai.gemini-2.5-flash"
+MODEL="${1:-$DEFAULT_MODEL}"
+
+# Validate environment variables
+if [ -z "$API_URL" ]; then
+    echo "❌ Error: API_URL environment variable not set"
+    echo "Set it with: ddev config --web-environment-add=API_URL=https://your-api-url"
+    exit 1
+fi
+
+if [ -z "$API_KEY" ]; then
+    echo "❌ Error: API_KEY environment variable not set"
+    echo "Set it with: ddev config --web-environment-add=API_KEY=your-key"
+    exit 1
+fi
+
+# Check for staged changes
+if ! git diff --cached --quiet; then
+    :
+else
+    echo "No staged changes to commit. Stage files with 'git add' first."
+    exit 1
+fi
+
+# Read commit message instructions
+INSTRUCTIONS_FILE="$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md"
+if [ -f "$INSTRUCTIONS_FILE" ]; then
+    COMMIT_INSTRUCTIONS=$(cat "$INSTRUCTIONS_FILE")
+else
+    echo "⚠️  Warning: Instructions file not found at ${INSTRUCTIONS_FILE}"
+    COMMIT_INSTRUCTIONS="Follow standard git commit message conventions."
+fi
+
+# Gather git context
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no tags")
+STAT=$(git diff --cached --stat)
+DIFF=$(git diff --cached -M -w)
+
+# Build context
+CONTEXT="Branch: ${BRANCH}
+Latest tag: ${TAG}
+
+--- STAGED FILES ---
+${STAT}
+
+--- CHANGES ---
+${DIFF}"
+
+echo "🤖 Generating commit message using ${MODEL}..."
+# Build JSON payload with jq (handles escaping properly)
+PAYLOAD=$(jq -n \
+  --arg model "$MODEL" \
+  --arg context "$CONTEXT" \
+  --arg instructions "$COMMIT_INSTRUCTIONS" \
+  '{
+    model: $model,
+    messages: [
+      {
+        role: "system",
+        content: ("You are a git commit message generator. Follow these rules:\n\n" + $instructions + "\n\nCRITICAL: Always include the ticket ID from the branch name followed by a colon and space, then a descriptive summary (e.g., \"THLP-116: add login button\"). Use present tense, imperative mood. First line max 72 chars. Output ONLY the commit message, nothing else.")
+      },
+      {
+        role: "user",
+        content: ("Analyze these changes and generate a commit message in the format TICKET-ID: description:\n\n" + $context)
+      }
+    ],
+    temperature: 0.3,
+    max_tokens: 2000
+  }')
+
+# Call API
+RESPONSE=$(curl -s -X POST "${API_URL}/chat/completions" \
+  -H "Authorization: Bearer ${API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "$PAYLOAD")
+
+# Extract message
+COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
+
+if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
+    echo "❌ Error: Failed to generate commit message"
+    echo "API Response: $RESPONSE"
+    exit 1
+fi
+
+# Debug: Show what was sent and received
+if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
+    echo "🔍 DEBUG INFO:"
+    echo "Model: $MODEL"
+    echo "Context length: ${#CONTEXT} chars"
+    echo "Instructions length: ${#COMMIT_INSTRUCTIONS} chars"
+    echo ""
+    echo "Raw API Response:"
+    echo "$RESPONSE" | jq '.'
+    echo ""
+    echo "Extracted message: '$COMMIT_MSG'"
+    echo ""
+fi
+
+echo ""
+echo "📝 Generated commit message:"
+echo "---"
+echo "$COMMIT_MSG"
+echo "---"
+echo ""
+read -p "Commit with this message? [Y/n] " -n 1 -r
+echo ""
+
+
+if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    git commit -m "$COMMIT_MSG"
+    echo "✅ Committed successfully!"
+else
+    echo "❌ Commit cancelled"
+    exit 1
+fi
