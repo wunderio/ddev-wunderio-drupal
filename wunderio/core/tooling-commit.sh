@@ -49,7 +49,7 @@ INSTRUCTIONS_FILE="$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instr
 if [ -f "$INSTRUCTIONS_FILE" ]; then
     COMMIT_INSTRUCTIONS=$(cat "$INSTRUCTIONS_FILE")
 else
-    echo "⚠️  Warning: Instructions file not found at ${INSTRUCTIONS_FILE}"
+    display_warning_message "⚠️  Warning: Instructions file not found at ${INSTRUCTIONS_FILE}"
     COMMIT_INSTRUCTIONS="Follow standard git commit message conventions."
 fi
 
@@ -64,7 +64,7 @@ DIFF=$(git diff --cached -M -w)
 MAX_DIFF_SIZE=10000
 DIFF_LENGTH=${#DIFF}
 if [ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
-    display_error_message "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
+    display_warning_message "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
     DIFF="${DIFF:0:$MAX_DIFF_SIZE}"
     DIFF="${DIFF}"$'\n'$'\n'"[... diff truncated due to size ...]"
 fi

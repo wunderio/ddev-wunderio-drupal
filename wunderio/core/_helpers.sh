@@ -27,3 +27,11 @@ display_error_message() {
 
     printf "${color_red}${message}${color_reset}\n"
 }
+
+display_warning_message() {
+    local color_yellow="\033[0;33m"
+    local color_reset="\033[0m"
+    local message="$1"
+
+    printf "${color_yellow}${message}${color_reset}\n"
+}
