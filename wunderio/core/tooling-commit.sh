@@ -47,7 +47,7 @@ if git diff --cached --quiet; then
     exit 0
 fi
 
-# Read commit message instructions
+# Read commit message instructions.
 INSTRUCTIONS_FILE="$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md"
 if [ -f "$INSTRUCTIONS_FILE" ]; then
     COMMIT_INSTRUCTIONS=$(cat "$INSTRUCTIONS_FILE")
@@ -113,7 +113,7 @@ JQ_ERROR=$(cat "$JQ_ERROR_FILE" 2>/dev/null || echo "")
 # Ensure the file is deleted even if the script crashes or is killed.
 trap 'rm -f "$JQ_ERROR_FILE"' EXIT
 
-# Validate that jq succeeded and produced valid JSON
+# Validate that jq succeeded and produced valid JSON.
 if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
     display_error_message "❌ Error: Failed to build API request payload"
     if [ $JQ_EXIT_CODE -ne 0 ] && [ -n "$JQ_ERROR" ]; then
@@ -124,13 +124,13 @@ if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
     exit 1
 fi
 
-# Call API
+# Call API.
 RESPONSE=$(curl -s -X POST "${API_URL}/chat/completions" \
   -H "Authorization: Bearer ${API_KEY}" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD")
 
-# Extract message
+# Extract message.
 COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
 
 if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
@@ -141,7 +141,7 @@ if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
     exit 1
 fi
 
-# Debug: Show what was sent and received
+# Debug: Show what was sent and received.
 if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     echo "🔍 DEBUG INFO:"
     echo "Model: $MODEL"

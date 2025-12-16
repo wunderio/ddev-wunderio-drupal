@@ -53,7 +53,7 @@ MET-123: implement user authentication flow
 - Be descriptive enough to help reviewers and future developers understand why the changes were made.
 
 ### 4. Grammar & Tone
-- Write in imperative mood (like giving a command): "Refactor API handler", not "Refactored API handler".
+- Write in imperative mood (like giving a command): "refactor API handler", not "refactored API handler".
 - Keep messages professional and relevant to the codebase.
 
 ---
