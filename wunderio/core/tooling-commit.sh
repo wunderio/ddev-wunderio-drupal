@@ -94,7 +94,7 @@ PAYLOAD=$(
     messages: [
       {
         role: "system",
-        content: ("You are a git commit message generator. Follow these rules:\n\n" + $ENV.instructions + "\n\nCRITICAL: ...")
+        content: ("You are a git commit message generator. Follow these rules:\n\n" + $ENV.instructions + "\n\nCRITICAL: Do not invent or hallucinate information. Only use the provided context. Output only the commit message, nothing else.")
       },
       {
         role: "user",
