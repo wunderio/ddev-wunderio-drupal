@@ -41,10 +41,8 @@ if [ -z "$API_KEY" ]; then
     exit 1
 fi
 
-# Check for staged changes
-if ! git diff --cached --quiet; then
-    :
-else
+# Check for staged changes.
+if git diff --cached --quiet; then
     echo "No staged changes to commit. Stage files with 'git add' first."
     exit 1
 fi
