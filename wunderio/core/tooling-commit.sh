@@ -13,6 +13,10 @@ fi
 source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
 
 # Configuration from environment.
+# These are expected to be defined via the project root .env file, which DDEV
+# loads into the web container environment. Example:
+#   API_URL=https://your-api-url
+#   API_KEY=your-api-key
 API_URL="${API_URL:-}"
 API_KEY="${API_KEY:-}"
 DEFAULT_MODEL="google_genai.gemini-2.5-flash"
@@ -21,13 +25,19 @@ MODEL="${1:-$DEFAULT_MODEL}"
 # Validate environment variables
 if [ -z "$API_URL" ]; then
     echo "❌ Error: API_URL environment variable not set"
-    echo "Set it with: ddev config --web-environment-add=API_URL=https://your-api-url"
+    echo "Set it in your project root .env file, then run 'ddev restart'."
+    echo ""
+    echo "Example:"
+    echo "  echo 'API_URL=https://your-api-url' >> .env"
     exit 1
 fi
 
 if [ -z "$API_KEY" ]; then
     echo "❌ Error: API_KEY environment variable not set"
-    echo "Set it with: ddev config --web-environment-add=API_KEY=your-key"
+    echo "Set it in your project root .env file, then run 'ddev restart'."
+    echo ""
+    echo "Example:"
+    echo "  echo 'API_KEY=your-api-key' >> .env"
     exit 1
 fi
 
