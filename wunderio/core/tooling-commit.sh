@@ -10,31 +10,31 @@ set -eu
 source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
 
 # Configuration from environment.
-# These are expected to be defined via the project root .env file, which DDEV
-# loads into the web container environment. Example:
-#   API_URL=https://your-api-url
-#   API_KEY=your-api-key
-API_URL="${API_URL:-}"
-API_KEY="${API_KEY:-}"
+# These are expected to be defined via DDEV global config, which makes them
+# available to all DDEV projects. Example:
+#   ddev config global --web-environment-add="OPENAI_API_URL=https://your-api-url"
+#   ddev config global --web-environment-add="OPENAI_API_KEY=your-api-key"
+OPENAI_API_URL="${OPENAI_API_URL:-}"
+OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 DEFAULT_MODEL="google_genai.gemini-2.5-flash"
 MODEL="${1:-$DEFAULT_MODEL}"
 
 # Validate environment variables.
-if [ -z "$API_URL" ]; then
-    display_error_message "❌ Error: API_URL environment variable not set"
-    echo "Set it in your project root .env file, then run 'ddev restart'."
+if [ -z "$OPENAI_API_URL" ]; then
+    display_error_message "❌ Error: OPENAI_API_URL environment variable not set"
+    echo "Set it in DDEV global config, then restart your DDEV project:"
     echo ""
-    echo "Example:"
-    echo "  echo 'API_URL=https://your-api-url' >> .env"
+    echo "  ddev config global --web-environment-add=\"OPENAI_API_URL=https://your-api-url\""
+    echo "  ddev restart"
     exit 0
 fi
 
-if [ -z "$API_KEY" ]; then
-    display_error_message "❌ Error: API_KEY environment variable not set"
-    echo "Set it in your project root .env file, then run 'ddev restart'."
+if [ -z "$OPENAI_API_KEY" ]; then
+    display_error_message "❌ Error: OPENAI_API_KEY environment variable not set"
+    echo "Set it in DDEV global config, then restart your DDEV project:"
     echo ""
-    echo "Example:"
-    echo "  echo 'API_KEY=your-api-key' >> .env"
+    echo "  ddev config global --web-environment-add=\"OPENAI_API_KEY=your-api-key\""
+    echo "  ddev restart"
     exit 0
 fi
 
@@ -122,8 +122,8 @@ if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
 fi
 
 # Call API.
-RESPONSE=$(curl -s -X POST "${API_URL}/chat/completions" \
-  -H "Authorization: Bearer ${API_KEY}" \
+RESPONSE=$(curl -s -X POST "${OPENAI_API_URL}/chat/completions" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD")
 

@@ -6,6 +6,3 @@ services:
       # it's not here. So we need to use the full path to the wunderio
       # directory.
       - ~/.ddev/wunderio:/mnt/ddev-global-cache/wunderio
-    # Add support to read environment variables from .env file in the project root.
-    env_file:
-      - ../.env
