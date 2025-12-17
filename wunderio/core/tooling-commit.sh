@@ -16,8 +16,7 @@ source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
 #   ddev config global --web-environment-add="OPENAI_API_KEY=your-api-key"
 OPENAI_API_URL="${OPENAI_API_URL:-}"
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
-DEFAULT_MODEL="google_genai.gemini-2.5-flash"
-MODEL="${1:-$DEFAULT_MODEL}"
+MODEL="google_genai.gemini-2.5-flash"
 
 # Validate environment variables.
 if [ -z "$OPENAI_API_URL" ]; then

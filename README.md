@@ -119,8 +119,7 @@ URL will become example.com.ddev.site.
   the project's commit message format (ticket/issue ID prefix, present tense, imperative mood).
   Requires `OPENAI_API_URL` and `OPENAI_API_KEY` environment variables to be configured via DDEV global config.
   ```bash
-  ddev commit                    # Uses default model (google_genai.gemini-2.5-flash)
-  ddev commit gpt-4o-mini       # Uses specified model
+  ddev commit
   ```
   **Setup:** Configure the API credentials in DDEV global config (applies to all projects) and restart your DDEV project:
   ```bash
@@ -128,7 +127,7 @@ URL will become example.com.ddev.site.
   ddev config global --web-environment-add="OPENAI_API_KEY=your-api-key"
   ddev restart
   ```
-  
+
   **Note:** The global config is stored in `~/.ddev/global_config.yaml`. You can edit this file directly if you prefer, then restart your DDEV project.
 
 ### Enhanced Configuration
