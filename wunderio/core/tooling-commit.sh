@@ -100,7 +100,7 @@ PAYLOAD=$(
       },
       {
         role: "user",
-        content: ("Analyze these changes and generate a commit message in the format TICKET-ID: description:\n\n" + $ENV.context)
+        content: ("Analyze the following changes and generate a commit message adhering to the system rules:\n\n" + $ENV.context)
       }
     ],
     temperature: 0.3,
