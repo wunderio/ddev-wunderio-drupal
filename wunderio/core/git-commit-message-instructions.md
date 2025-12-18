@@ -8,7 +8,7 @@ To ensure consistent and informative commit messages, follow these rules. They a
 Each commit message **must** follow this structure:
 
 ```
-TICKET-ID: short summary of the change
+TICKET-ID: Short summary of the change
 
 [Optional: blank line]
 [Optional: bulleted list of detailed changes]
@@ -19,13 +19,13 @@ TICKET-ID: short summary of the change
 _Given branch:_ `feature/MET-123-a-new-feature`
 
 ```
-MET-123: add login button to homepage
+MET-123: Add login button to homepage
 ```
 
 ### Example: Multi-line Commit (Multiple Changes or Explanation)
 
 ```
-MET-123: implement user authentication flow
+MET-123: Implement user authentication flow
 
 - Add login form to homepage
 - Connect login form to backend auth API
@@ -41,11 +41,12 @@ MET-123: implement user authentication flow
 - Infer the identifier from the branch name when possible.
 - **If no ticket ID can be found in the branch name, omit the TICKET-ID prefix and start with the description.**
 - **Do not strip leading characters** that are part of the identifier. For example, if the branch is `feature/#30-Add-AI-tool-ddev-commit`, the commit message must start with `#30: ...`, not `30: ...`.
-- Format: `TICKET-ID: message` (or just `message` if no ID exists).
+- Format: `TICKET-ID: Message` (or just `Message` if no ID exists).
 
 ### 2. Summary Line
+- **Capitalize the first letter** of the summary (the text immediately following the ticket ID).
 - Keep the first line concise (max 72 characters recommended).
-- Use present tense: "add", "fix", "update", not "added", "fixed", "updated".
+- Use present tense: "Add", "Fix", "Update", not "Added", "Fixed", "Updated".
 - Do **not** end the summary line with a period.
 
 ### 3. Body (Optional, for Complex Changes)
@@ -54,7 +55,7 @@ MET-123: implement user authentication flow
 - Be descriptive enough to help reviewers and future developers understand why the changes were made.
 
 ### 4. Grammar & Tone
-- Write in imperative mood (like giving a command): "refactor API handler", not "refactored API handler".
+- Write in imperative mood (like giving a command): "Refactor API handler", not "Refactored API handler".
 - Keep messages professional and relevant to the codebase.
 
 ---
@@ -62,11 +63,11 @@ MET-123: implement user authentication flow
 ## Examples of Good vs. Bad
 
 **Good:**
-- `MET-234: fix crash on login when user has no profile image`
-- `MET-567: add config support`
-- `MET-890: refactor dashboard components`
+- `MET-234: Fix crash on login when user has no profile image`
+- `MET-567: Add config support`
+- `MET-890: Refactor dashboard components`
 
 **Bad:**
-- `fixed stuff`
-- `Update`
-- `debug`
+- `fixed stuff` (lowercase, vague, past tense)
+- `Update` (vague)
+- `MET-123: debug` (lowercase, vague)
