@@ -27,15 +27,12 @@ URL will become example.com.ddev.site.
    ddev add-on get wunderio/ddev-wunderio-drupal && ddev restart
    ```
 
-3. Optionally if you have GrumPHP installed, update grumphp.yml:
+3. Optionally if you have GrumPHP installed:
 
-   ```
-   grumphp:
-     git_hook_variables:
-       EXEC_GRUMPHP_COMMAND: 'ddev php'
-   ```
+   - **Default setup (recommended):** In many setups the default `php` used by GrumPHP works out of the box and you **do not need any custom `EXEC_GRUMPHP_COMMAND`** in `grumphp.yml`.
+   - **If you previously added a custom `EXEC_GRUMPHP_COMMAND` for DDEV/Lando:** You can safely remove the entire `git_hook_variables` section from `grumphp.yml` and then re‑initialise the hooks so they use the default configuration.
 
-   and then re-init the hook:
+   After adjusting `grumphp.yml`, re‑init the hook:
 
    ```bash
    ddev grumphp git:init
