@@ -15,6 +15,10 @@ source "$HOME/.ddev/wunderio/core/_helpers.sh"
 # Host-side current directory.
 HOST_PWD="$PWD"
 
+# Capture host Git identity (if configured).
+HOST_GIT_NAME="$(git config user.name || true)"
+HOST_GIT_EMAIL="$(git config user.email || true)"
+
 # Find DDEV project root by looking for .ddev directory.
 # Walk up from current directory until we find it.
 PROJECT_ROOT="$HOST_PWD"
@@ -54,7 +58,9 @@ else
   TARGET_PATH="${CONTAINER_ROOT}"
 fi
 
-# Run the internal web command inside the container, passing the target path
-# as the first argument so that it can cd to the correct directory before
-# generating the commit message.
-ddev wunderio-core-commit-internal "$TARGET_PATH" "$@"
+# Run the internal web command inside the container.
+# We pass:
+# - TARGET_PATH as the first argument so it can cd to the correct directory.
+# - HOST_GIT_NAME and HOST_GIT_EMAIL as additional arguments so the
+#   container-side script can set Git author/committer identity explicitly.
+ddev wunderio-core-commit-internal "$TARGET_PATH" "$HOST_GIT_NAME" "$HOST_GIT_EMAIL" "$@"
