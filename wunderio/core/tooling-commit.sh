@@ -112,6 +112,8 @@ ${STAT}
 ${DIFF}"
 
 JQ_ERROR_FILE=$(mktemp)
+# Ensure the file is deleted even if the script crashes or is killed.
+trap 'rm -f "$JQ_ERROR_FILE"' EXIT
 # Build JSON payload with jq (handles escaping properly)
 # Pass variables via env (rather than passing them as arguments), read them in jq using $ENV
 # This is more robust and avoids issues with argument length limits.
@@ -138,8 +140,6 @@ PAYLOAD=$(
 )
 JQ_EXIT_CODE=$?
 JQ_ERROR=$(cat "$JQ_ERROR_FILE" 2>/dev/null || echo "")
-# Ensure the file is deleted even if the script crashes or is killed.
-trap 'rm -f "$JQ_ERROR_FILE"' EXIT
 
 # Validate that jq succeeded and produced valid JSON.
 if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
@@ -231,13 +231,14 @@ fi
 
 # Extract message.
 JQ_COMMIT_MSG_ERROR_FILE=$(mktemp)
+# Ensure the file is deleted even if the script crashes or is killed.
+trap 'rm -f "$JQ_COMMIT_MSG_ERROR_FILE"' EXIT
 # Temporarily disable 'set -e' to allow error handling
 set +e
 COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>"$JQ_COMMIT_MSG_ERROR_FILE")
 JQ_COMMIT_MSG_EXIT_CODE=$?
 set -e
 JQ_COMMIT_MSG_ERROR=$(cat "$JQ_COMMIT_MSG_ERROR_FILE" 2>/dev/null || echo "")
-rm -f "$JQ_COMMIT_MSG_ERROR_FILE"
 
 if [ $JQ_COMMIT_MSG_EXIT_CODE -ne 0 ]; then
     display_error_message "❌ Error: Failed to parse API response (invalid JSON or unexpected structure)"
