@@ -198,7 +198,25 @@ if [ -z "$HTTP_STATUS" ] || [ $HTTP_STATUS_NUMERIC -eq 0 ] || [ $HTTP_STATUS_ERR
 fi
 
 # Extract message.
-COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
+JQ_COMMIT_MSG_ERROR_FILE=$(mktemp)
+# Temporarily disable 'set -e' to allow error handling
+set +e
+COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>"$JQ_COMMIT_MSG_ERROR_FILE")
+JQ_COMMIT_MSG_EXIT_CODE=$?
+set -e
+JQ_COMMIT_MSG_ERROR=$(cat "$JQ_COMMIT_MSG_ERROR_FILE" 2>/dev/null || echo "")
+rm -f "$JQ_COMMIT_MSG_ERROR_FILE"
+
+if [ $JQ_COMMIT_MSG_EXIT_CODE -ne 0 ]; then
+    display_error_message "❌ Error: Failed to parse API response (invalid JSON or unexpected structure)"
+    if [ -n "$JQ_COMMIT_MSG_ERROR" ]; then
+        echo "jq error: $JQ_COMMIT_MSG_ERROR"
+    fi
+    echo "API Response (truncated, may contain sensitive info):"
+    echo "${RESPONSE:0:200}..."
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
 
 if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
     display_error_message "❌ Error: Failed to generate commit message"
