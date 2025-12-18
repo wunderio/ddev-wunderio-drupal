@@ -10,7 +10,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-# Function to display status message
+# Function to display status message.
 display_status_message() {
     local color_green="\033[38;5;70m"
     local color_reset="\033[0m"
@@ -26,4 +26,13 @@ display_error_message() {
     local message="$1"
 
     printf "${color_red}${message}${color_reset}\n"
+}
+
+# Function to display warning message.
+display_warning_message() {
+    local color_yellow="\033[0;33m"
+    local color_reset="\033[0m"
+    local message="$1"
+
+    printf "${color_yellow}${message}${color_reset}\n"
 }

@@ -1,0 +1,293 @@
+#!/bin/bash
+#ddev-generated
+
+#
+# Helper script to generate AI commit message from staged changes.
+#
+
+set -eu
+if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
+    set -x
+fi
+
+source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+
+# Configuration from environment.
+# These are expected to be defined via DDEV global config, which makes them
+# available to all DDEV projects. Example:
+#   ddev config global --web-environment-add="OPENAI_API_URL=https://your-api-url"
+#   ddev config global --web-environment-add="OPENAI_API_KEY=your-api-key"
+OPENAI_API_URL="${OPENAI_API_URL:-}"
+OPENAI_API_KEY="${OPENAI_API_KEY:-}"
+MODEL="google_genai.gemini-2.5-flash"
+
+# Validate environment variables.
+if [ -z "$OPENAI_API_URL" ] || [ -z "$OPENAI_API_KEY" ]; then
+    display_error_message "❌ Error: Required OpenAI environment variables are not set"
+    echo "Set the missing variables in DDEV global config, then restart your DDEV project:"
+    echo ""
+    if [ -z "$OPENAI_API_URL" ]; then
+        echo "  ddev config global --web-environment-add=\"OPENAI_API_URL=https://your-api-url\""
+    fi
+    if [ -z "$OPENAI_API_KEY" ]; then
+        echo "  ddev config global --web-environment-add=\"OPENAI_API_KEY=your-api-key\""
+    fi
+    echo ""
+    echo "  ddev restart"
+    exit 0
+fi
+
+# Check for staged changes.
+if git diff --cached --quiet; then
+    display_status_message "No staged changes to commit. Stage files with 'git add' first."
+    exit 0
+fi
+
+echo "🤖 Generating commit message using ${MODEL}..."
+
+# -----------------------------------------------------------------------------
+# Resolve Instructions File
+# -----------------------------------------------------------------------------
+# We search for project-specific AI rules or commit instructions first.
+# If none are found, we fall back to the global WunderIO default.
+# -----------------------------------------------------------------------------
+
+# Define potential locations in order of priority (Project Root is usually $PWD in DDEV)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+
+CANDIDATE_FILES=(
+    "$PROJECT_ROOT/.cursorrules"                       # Cursor root file
+    "$PROJECT_ROOT/.cursor/rules"                      # Cursor rules file (if used as single file)
+    "$PROJECT_ROOT/.github/git-commit-instructions.md" # Specific GitHub docs
+    "$PROJECT_ROOT/.github/copilot-instructions.md"    # GitHub Copilot docs
+    "$PROJECT_ROOT/COMMIT_INSTRUCTIONS.md"             # Generic root file
+    "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md" # Global Fallback
+)
+
+COMMIT_INSTRUCTIONS=""
+FOUND_INSTRUCTIONS_FILE=""
+
+for FILE in "${CANDIDATE_FILES[@]}"; do
+    if [ -f "$FILE" ]; then
+        FOUND_INSTRUCTIONS_FILE="$FILE"
+        COMMIT_INSTRUCTIONS=$(cat "$FILE")
+        echo "Using instructions from: $FILE"
+        break
+    fi
+done
+
+# Final fallback if absolutely nothing was found (rare, as global should exist)
+if [ -z "$COMMIT_INSTRUCTIONS" ]; then
+    display_warning_message "⚠️  Warning: No instructions file found. Using generic defaults."
+    COMMIT_INSTRUCTIONS="Follow standard git commit message conventions. Format: 'TICKET-ID: description'."
+fi
+
+# Gather git context.
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no tags")
+STAT=$(git diff --cached --stat)
+DIFF=$(git diff --cached -M -w)
+
+# Truncate diff if it's too large to avoid exceeding API token limits.
+# Most APIs have input token limits, and very large diffs can cause failures.
+MAX_DIFF_SIZE=10000
+DIFF_LENGTH=${#DIFF}
+if [ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
+    display_warning_message "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
+    DIFF="${DIFF:0:$MAX_DIFF_SIZE}"
+    DIFF="${DIFF}"$'\n'$'\n'"[... diff truncated due to size ...]"
+fi
+
+# Build context.
+CONTEXT="Branch: ${BRANCH}
+Latest tag: ${TAG}
+
+--- STAGED FILES ---
+${STAT}
+
+--- CHANGES ---
+${DIFF}"
+
+JQ_ERROR_FILE=$(mktemp)
+# Ensure the file is deleted even if the script crashes or is killed.
+trap 'rm -f "$JQ_ERROR_FILE"' EXIT
+# Build JSON payload with jq (handles escaping properly)
+# Pass variables via env (rather than passing them as arguments), read them in jq using $ENV
+# This is more robust and avoids issues with argument length limits.
+PAYLOAD=$(
+  model="$MODEL" \
+  context="$CONTEXT" \
+  instructions="$COMMIT_INSTRUCTIONS" \
+  jq -n \
+  '{
+    model: $ENV.model,
+    messages: [
+      {
+        role: "system",
+        content: ("You are a git commit message generator. Follow these rules:\n\n" + $ENV.instructions + "\n\nCRITICAL: Do not invent or hallucinate information. Only use the provided context. Output only the commit message, nothing else.")
+      },
+      {
+        role: "user",
+        content: ("Analyze the following changes and generate a commit message adhering to the system rules:\n\n" + $ENV.context)
+      }
+    ],
+    temperature: 0.3,
+    max_tokens: 2000
+  }' 2>"$JQ_ERROR_FILE"
+)
+JQ_EXIT_CODE=$?
+JQ_ERROR=$(cat "$JQ_ERROR_FILE" 2>/dev/null || echo "")
+
+# Validate that jq succeeded and produced valid JSON.
+if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
+    display_error_message "❌ Error: Failed to build API request payload"
+    if [ $JQ_EXIT_CODE -ne 0 ] && [ -n "$JQ_ERROR" ]; then
+        echo "jq error: $JQ_ERROR"
+    elif [ $JQ_EXIT_CODE -ne 0 ]; then
+        echo "jq command failed (exit code: $JQ_EXIT_CODE). This may indicate invalid input data."
+    fi
+    exit 0
+fi
+
+CURL_RESPONSE_FILE=$(mktemp)
+CURL_HTTP_CODE_FILE=$(mktemp)
+
+# Ensure temp files are cleaned up on exit.
+trap 'rm -f "$CURL_RESPONSE_FILE" "$CURL_HTTP_CODE_FILE"' EXIT
+
+# Call API.
+# Temporarily disable 'set -e' to allow error handling
+set +e
+curl -s -f -X POST "${OPENAI_API_URL}/chat/completions" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "$PAYLOAD" \
+  -w "%{http_code}" -o "$CURL_RESPONSE_FILE" > "$CURL_HTTP_CODE_FILE"
+CURL_EXIT_CODE=$?
+set -e
+HTTP_STATUS=$(cat "$CURL_HTTP_CODE_FILE" 2>/dev/null || echo "")
+RESPONSE=$(cat "$CURL_RESPONSE_FILE" 2>/dev/null || echo "")
+
+# Handle curl errors with specific messages.
+if [ $CURL_EXIT_CODE -ne 0 ]; then
+    case $CURL_EXIT_CODE in
+        6)
+            ERROR_MSG="Could not resolve host. Check your network connection and API URL."
+            ;;
+        7)
+            ERROR_MSG="Failed to connect to host. Check your network connection and that the API server is reachable."
+            ;;
+        28)
+            ERROR_MSG="Connection timeout. The API server took too long to respond."
+            ;;
+        35)
+            ERROR_MSG="SSL/TLS connection error. Check your API URL and certificate settings."
+            ;;
+        *)
+            ERROR_MSG="Network error (curl exit code: $CURL_EXIT_CODE). Check your connection and API settings."
+            ;;
+    esac
+    display_error_message "❌ Error: $ERROR_MSG"
+    if [ -n "$RESPONSE" ]; then
+        echo "API Response (truncated, may contain sensitive info):"
+        echo "${RESPONSE:0:200}..."
+    fi
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
+
+# Handle HTTP status errors.
+# Temporarily disable 'set -e' for safe numeric comparison
+set +e
+HTTP_STATUS_NUMERIC=0
+if [ -n "$HTTP_STATUS" ] && [ "$HTTP_STATUS" -ge 0 ] 2>/dev/null; then
+    HTTP_STATUS_NUMERIC=1
+fi
+# Check if status is an error (only if numeric)
+HTTP_STATUS_ERROR=0
+if [ $HTTP_STATUS_NUMERIC -eq 1 ]; then
+    if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+        HTTP_STATUS_ERROR=1
+    fi
+fi
+set -e
+
+if [ -z "$HTTP_STATUS" ] || [ $HTTP_STATUS_NUMERIC -eq 0 ] || [ $HTTP_STATUS_ERROR -eq 1 ]; then
+    if [ -z "$HTTP_STATUS" ] || [ $HTTP_STATUS_NUMERIC -eq 0 ]; then
+        display_error_message "❌ Error: API request failed - no HTTP status received"
+    else
+        display_error_message "❌ Error: API request failed (HTTP $HTTP_STATUS)"
+    fi
+    if [ -n "$RESPONSE" ]; then
+        echo "API Response (truncated, may contain sensitive info):"
+        echo "${RESPONSE:0:200}..."
+    fi
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
+
+# Extract message.
+JQ_COMMIT_MSG_ERROR_FILE=$(mktemp)
+# Ensure the file is deleted even if the script crashes or is killed.
+trap 'rm -f "$JQ_COMMIT_MSG_ERROR_FILE"' EXIT
+# Temporarily disable 'set -e' to allow error handling
+set +e
+COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>"$JQ_COMMIT_MSG_ERROR_FILE")
+JQ_COMMIT_MSG_EXIT_CODE=$?
+set -e
+JQ_COMMIT_MSG_ERROR=$(cat "$JQ_COMMIT_MSG_ERROR_FILE" 2>/dev/null || echo "")
+
+if [ $JQ_COMMIT_MSG_EXIT_CODE -ne 0 ]; then
+    display_error_message "❌ Error: Failed to parse API response (invalid JSON or unexpected structure)"
+    if [ -n "$JQ_COMMIT_MSG_ERROR" ]; then
+        echo "jq error: $JQ_COMMIT_MSG_ERROR"
+    fi
+    echo "API Response (truncated, may contain sensitive info):"
+    echo "${RESPONSE:0:200}..."
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
+
+if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
+    display_error_message "❌ Error: Failed to generate commit message"
+    echo "API Response (truncated, may contain sensitive info):"
+    echo "${RESPONSE:0:200}..."
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
+
+# Debug: Show what was sent and received.
+if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
+    echo "🔍 DEBUG INFO:"
+    echo "Model: $MODEL"
+    echo "Context length: ${#CONTEXT} chars"
+    echo "Instructions length: ${#COMMIT_INSTRUCTIONS} chars"
+    echo ""
+    echo "Raw API Response:"
+    echo "$RESPONSE" | jq '.'
+    echo ""
+    echo "Extracted message: '$COMMIT_MSG'"
+    echo ""
+fi
+
+echo ""
+echo "📝 Generated commit message:"
+echo "---"
+echo "$COMMIT_MSG"
+echo "---"
+echo ""
+read -p "Commit with this message? [Y/n] " -n 1 -r
+echo ""
+
+if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    # Use -F - to read from stdin to properly preserve multi-line messages and special characters.
+    if echo "$COMMIT_MSG" | git commit -F -; then
+        display_status_message "✅ Committed successfully!"
+    else
+        display_error_message "❌ Error: git commit failed. Please fix the issues above and try again."
+        exit 1
+    fi
+else
+    echo "Commit cancelled"
+    exit 0
+fi
