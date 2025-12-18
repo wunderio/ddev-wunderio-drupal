@@ -3,7 +3,7 @@
 #ddev-generated
 
 ## Description: Internal command to generate AI commit message from staged changes
-## Usage: wunderio-core-commit-internal [working-dir] [host-git-name] [host-git-email]
+## Usage: wunderio-core-commit-internal [working-dir] [host-git-name] [host-git-email] [additional-args...]
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
