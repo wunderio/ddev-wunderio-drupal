@@ -46,13 +46,43 @@ if git diff --cached --quiet; then
     exit 0
 fi
 
-# Read commit message instructions.
-INSTRUCTIONS_FILE="$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md"
-if [ -f "$INSTRUCTIONS_FILE" ]; then
-    COMMIT_INSTRUCTIONS=$(cat "$INSTRUCTIONS_FILE")
-else
-    display_warning_message "⚠️  Warning: Instructions file not found at ${INSTRUCTIONS_FILE}"
-    COMMIT_INSTRUCTIONS="Follow standard git commit message conventions."
+echo "🤖 Generating commit message using ${MODEL}..."
+
+# -----------------------------------------------------------------------------
+# Resolve Instructions File
+# -----------------------------------------------------------------------------
+# We search for project-specific AI rules or commit instructions first.
+# If none are found, we fall back to the global WunderIO default.
+# -----------------------------------------------------------------------------
+
+# Define potential locations in order of priority (Project Root is usually $PWD in DDEV)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+
+CANDIDATE_FILES=(
+    "$PROJECT_ROOT/.cursorrules"                       # Cursor root file
+    "$PROJECT_ROOT/.cursor/rules"                      # Cursor rules file (if used as single file)
+    "$PROJECT_ROOT/.github/git-commit-instructions.md" # Specific GitHub docs
+    "$PROJECT_ROOT/.github/copilot-instructions.md"    # GitHub Copilot docs
+    "$PROJECT_ROOT/COMMIT_INSTRUCTIONS.md"             # Generic root file
+    "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md" # Global Fallback
+)
+
+COMMIT_INSTRUCTIONS=""
+FOUND_INSTRUCTIONS_FILE=""
+
+for FILE in "${CANDIDATE_FILES[@]}"; do
+    if [ -f "$FILE" ]; then
+        FOUND_INSTRUCTIONS_FILE="$FILE"
+        COMMIT_INSTRUCTIONS=$(cat "$FILE")
+        echo "Using instructions from: $FILE"
+        break
+    fi
+done
+
+# Final fallback if absolutely nothing was found (rare, as global should exist)
+if [ -z "$COMMIT_INSTRUCTIONS" ]; then
+    display_warning_message "⚠️  Warning: No instructions file found. Using generic defaults."
+    COMMIT_INSTRUCTIONS="Follow standard git commit message conventions. Format: 'TICKET-ID: description'."
 fi
 
 # Gather git context.
@@ -81,7 +111,6 @@ ${STAT}
 --- CHANGES ---
 ${DIFF}"
 
-echo "🤖 Generating commit message using ${MODEL}..."
 JQ_ERROR_FILE=$(mktemp)
 # Build JSON payload with jq (handles escaping properly)
 # Pass variables via env (rather than passing them as arguments), read them in jq using $ENV
