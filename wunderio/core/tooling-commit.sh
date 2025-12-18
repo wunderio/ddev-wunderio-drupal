@@ -281,8 +281,12 @@ echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     # Use -F - to read from stdin to properly preserve multi-line messages and special characters.
-    echo "$COMMIT_MSG" | git commit -F -
-    display_status_message "✅ Committed successfully!"
+    if echo "$COMMIT_MSG" | git commit -F -; then
+        display_status_message "✅ Committed successfully!"
+    else
+        display_error_message "❌ Error: git commit failed. Please fix the issues above and try again."
+        exit 1
+    fi
 else
     echo "Commit cancelled"
     exit 0
