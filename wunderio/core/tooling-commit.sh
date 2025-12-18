@@ -231,7 +231,6 @@ echo ""
 read -p "Commit with this message? [Y/n] " -n 1 -r
 echo ""
 
-
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
     git commit -m "$COMMIT_MSG"
     display_status_message "✅ Committed successfully!"
