@@ -155,7 +155,7 @@ fi
 CURL_RESPONSE_FILE=$(mktemp)
 CURL_HTTP_CODE_FILE=$(mktemp)
 
-# Ensure temp files are cleaned up on exit
+# Ensure temp files are cleaned up on exit.
 trap 'rm -f "$CURL_RESPONSE_FILE" "$CURL_HTTP_CODE_FILE"' EXIT
 
 # Call API.

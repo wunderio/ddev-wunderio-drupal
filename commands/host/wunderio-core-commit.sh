@@ -10,6 +10,8 @@
 
 set -euo pipefail
 
+source "$HOME/.ddev/wunderio/core/_helpers.sh"
+
 # Host-side current directory.
 HOST_PWD="$PWD"
 
@@ -27,6 +29,15 @@ done
 if [ "$PROJECT_ROOT" == "/" ]; then
   # Resolve project root from this script location (for add-on installations)
   PROJECT_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+fi
+
+# Safety Check: Ensure we actually found a DDEV project.
+# If we didn't, PROJECT_ROOT might be "/" or some arbitrary system path.
+if [ ! -d "$PROJECT_ROOT/.ddev" ]; then
+  display_error_message "❌ Error: Could not determine DDEV project root." >&2
+  echo "   Ensure you are running this command from within a DDEV project" >&2
+  echo "   or that the script is installed correctly in .ddev/commands/..." >&2
+  exit 1
 fi
 
 # Compute path relative to project root, if possible.
