@@ -14,6 +14,15 @@ set -euo pipefail
 WORKDIR="${1:-}"
 
 if [ -n "$WORKDIR" ] && [[ "$WORKDIR" = /* ]]; then
+  # Validate that the directory exists and is accessible before changing to it.
+  if [ ! -d "$WORKDIR" ]; then
+    echo "Error: Working directory does not exist: $WORKDIR" >&2
+    exit 1
+  fi
+  if [ ! -r "$WORKDIR" ] || [ ! -x "$WORKDIR" ]; then
+    echo "Error: Working directory is not accessible (missing read or execute permissions): $WORKDIR" >&2
+    exit 1
+  fi
   # Use the provided working directory.
   cd "$WORKDIR"
 fi
