@@ -282,7 +282,8 @@ read -p "Commit with this message? [Y/n] " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-    git commit -m "$COMMIT_MSG"
+    # Use -F - to read from stdin to properly preserve multi-line messages and special characters.
+    echo "$COMMIT_MSG" | git commit -F -
     display_status_message "✅ Committed successfully!"
 else
     echo "Commit cancelled"
