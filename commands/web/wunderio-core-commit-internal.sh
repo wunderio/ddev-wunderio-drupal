@@ -9,7 +9,8 @@
 
 set -euo pipefail
 
-# Optional first argument: absolute working directory inside the container.
+# Optional first argument: absolute working directory (must be an absolute path
+# in the container's filesystem, e.g., "/var/www/html").
 WORKDIR="${1:-}"
 
 if [ -n "$WORKDIR" ] && [[ "$WORKDIR" = /* ]]; then
