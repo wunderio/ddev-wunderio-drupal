@@ -117,14 +117,85 @@ if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
     elif [ $JQ_EXIT_CODE -ne 0 ]; then
         echo "jq command failed (exit code: $JQ_EXIT_CODE). This may indicate invalid input data."
     fi
-    exit 1
+    exit 0
 fi
 
+CURL_RESPONSE_FILE=$(mktemp)
+CURL_HTTP_CODE_FILE=$(mktemp)
+
+# Ensure temp files are cleaned up on exit
+trap 'rm -f "$CURL_RESPONSE_FILE" "$CURL_HTTP_CODE_FILE"' EXIT
+
 # Call API.
-RESPONSE=$(curl -s -X POST "${OPENAI_API_URL}/chat/completions" \
+# Temporarily disable 'set -e' to allow error handling
+set +e
+curl -s -f -X POST "${OPENAI_API_URL}/chat/completions" \
   -H "Authorization: Bearer ${OPENAI_API_KEY}" \
   -H "Content-Type: application/json" \
-  -d "$PAYLOAD")
+  -d "$PAYLOAD" \
+  -w "%{http_code}" -o "$CURL_RESPONSE_FILE" > "$CURL_HTTP_CODE_FILE"
+CURL_EXIT_CODE=$?
+set -e
+HTTP_STATUS=$(cat "$CURL_HTTP_CODE_FILE" 2>/dev/null || echo "")
+RESPONSE=$(cat "$CURL_RESPONSE_FILE" 2>/dev/null || echo "")
+
+# Handle curl errors with specific messages.
+if [ $CURL_EXIT_CODE -ne 0 ]; then
+    case $CURL_EXIT_CODE in
+        6)
+            ERROR_MSG="Could not resolve host. Check your network connection and API URL."
+            ;;
+        7)
+            ERROR_MSG="Failed to connect to host. Check your network connection and that the API server is reachable."
+            ;;
+        28)
+            ERROR_MSG="Connection timeout. The API server took too long to respond."
+            ;;
+        35)
+            ERROR_MSG="SSL/TLS connection error. Check your API URL and certificate settings."
+            ;;
+        *)
+            ERROR_MSG="Network error (curl exit code: $CURL_EXIT_CODE). Check your connection and API settings."
+            ;;
+    esac
+    display_error_message "❌ Error: $ERROR_MSG"
+    if [ -n "$RESPONSE" ]; then
+        echo "API Response (truncated, may contain sensitive info):"
+        echo "${RESPONSE:0:200}..."
+    fi
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
+
+# Handle HTTP status errors.
+# Temporarily disable 'set -e' for safe numeric comparison
+set +e
+HTTP_STATUS_NUMERIC=0
+if [ -n "$HTTP_STATUS" ] && [ "$HTTP_STATUS" -ge 0 ] 2>/dev/null; then
+    HTTP_STATUS_NUMERIC=1
+fi
+# Check if status is an error (only if numeric)
+HTTP_STATUS_ERROR=0
+if [ $HTTP_STATUS_NUMERIC -eq 1 ]; then
+    if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+        HTTP_STATUS_ERROR=1
+    fi
+fi
+set -e
+
+if [ -z "$HTTP_STATUS" ] || [ $HTTP_STATUS_NUMERIC -eq 0 ] || [ $HTTP_STATUS_ERROR -eq 1 ]; then
+    if [ -z "$HTTP_STATUS" ] || [ $HTTP_STATUS_NUMERIC -eq 0 ]; then
+        display_error_message "❌ Error: API request failed - no HTTP status received"
+    else
+        display_error_message "❌ Error: API request failed (HTTP $HTTP_STATUS)"
+    fi
+    if [ -n "$RESPONSE" ]; then
+        echo "API Response (truncated, may contain sensitive info):"
+        echo "${RESPONSE:0:200}..."
+    fi
+    echo "For full details, rerun with WUNDERIO_DEBUG=1"
+    exit 0
+fi
 
 # Extract message.
 COMMIT_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>/dev/null)
@@ -134,7 +205,7 @@ if [ -z "$COMMIT_MSG" ] || [ "$COMMIT_MSG" = "null" ]; then
     echo "API Response (truncated, may contain sensitive info):"
     echo "${RESPONSE:0:200}..."
     echo "For full details, rerun with WUNDERIO_DEBUG=1"
-    exit 1
+    exit 0
 fi
 
 # Debug: Show what was sent and received.
