@@ -22,20 +22,17 @@ OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 MODEL="google_genai.gemini-2.5-flash"
 
 # Validate environment variables.
-if [ -z "$OPENAI_API_URL" ]; then
-    display_error_message "❌ Error: OPENAI_API_URL environment variable not set"
-    echo "Set it in DDEV global config, then restart your DDEV project:"
+if [ -z "$OPENAI_API_URL" ] || [ -z "$OPENAI_API_KEY" ]; then
+    display_error_message "❌ Error: Required OpenAI environment variables are not set"
+    echo "Set the missing variables in DDEV global config, then restart your DDEV project:"
     echo ""
-    echo "  ddev config global --web-environment-add=\"OPENAI_API_URL=https://your-api-url\""
-    echo "  ddev restart"
-    exit 0
-fi
-
-if [ -z "$OPENAI_API_KEY" ]; then
-    display_error_message "❌ Error: OPENAI_API_KEY environment variable not set"
-    echo "Set it in DDEV global config, then restart your DDEV project:"
+    if [ -z "$OPENAI_API_URL" ]; then
+        echo "  ddev config global --web-environment-add=\"OPENAI_API_URL=https://your-api-url\""
+    fi
+    if [ -z "$OPENAI_API_KEY" ]; then
+        echo "  ddev config global --web-environment-add=\"OPENAI_API_KEY=your-api-key\""
+    fi
     echo ""
-    echo "  ddev config global --web-environment-add=\"OPENAI_API_KEY=your-api-key\""
     echo "  ddev restart"
     exit 0
 fi
