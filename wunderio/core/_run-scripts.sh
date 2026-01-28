@@ -53,7 +53,6 @@ custom_script="$app_root_customs/$script_or_hook/$script_name"
 # config.wunderio.yaml we call it on the host via exec-host.
 core_script="$WUNDERIO_GLOBAL_SCRIPT_ROOT/$script_or_hook/$script_name"
 
-echo "$legacy_custom_script";
 # Check if the custom script exists and is executable
 if [ -x "$legacy_custom_script" ]; then
     display_status_message "Running custom script: $legacy_custom_script"
