@@ -80,10 +80,17 @@ if [[ -z "$prod_ssh_options" || "$prod_ssh_options" == "null" ]]; then
   exit 1
 fi
 
+# Test SSH connection - allow passphrase prompt to be visible
+ssh_command="ssh $prod_ssh_user@$prod_ssh_host $prod_ssh_options"
+if ! $ssh_command "echo 'Connection successful'" 2>&1 | grep -q "Connection successful"; then
+    display_error_message "Failed to establish SSH connection to $ALIAS_KEY. Check your network and credentials."
+    exit 1
+fi
+
 # --- Perform the Database Dump and Import ---
 display_status_message "Dumping database from '$SITE_ALIAS'..."
 
-ssh "$prod_ssh_user@$prod_ssh_host" "$prod_ssh_options" "drush sql-dump --structure-tables-list=cache,cache_*,history,search_*,sessions" > "$sql_file"
+$ssh_command "drush sql-dump --structure-tables-list=cache,cache_*,history,search_*,sessions" > "$sql_file"
 
 display_status_message "Dump complete, starting import!"
 
