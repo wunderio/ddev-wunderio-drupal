@@ -6,7 +6,6 @@
 ## Usage: commit [model]
 ## Example: ddev commit gpt-4o-mini
 ## ExecRaw: true
-## ProjectTypes: drupal9,drupal10,drupal11
 
 set -euo pipefail
 

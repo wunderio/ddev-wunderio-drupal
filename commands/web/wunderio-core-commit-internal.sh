@@ -42,4 +42,4 @@ if [ -n "$HOST_GIT_EMAIL_ARG" ]; then
   export GIT_COMMITTER_EMAIL="$HOST_GIT_EMAIL_ARG"
 fi
 
-"$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh" tooling-commit.sh "${@:4}"
+wdr-core tooling commit.sh "${@:4}"
