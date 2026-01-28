@@ -10,6 +10,6 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 $DDEV_COMPOSER_ROOT/vendor/bin/grumphp "$@"

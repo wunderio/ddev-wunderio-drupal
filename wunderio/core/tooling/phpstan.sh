@@ -10,7 +10,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 # Check that PHPStan is installed.
 if [ ! -f "$DDEV_COMPOSER_ROOT/vendor/bin/phpstan" ]; then

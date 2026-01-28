@@ -12,7 +12,7 @@ fi
 
 # --- Sourcing Helper Functions ---
 # This is run in host context, so we need to use the home directory.
-source "$HOME/.ddev/wunderio/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 # 1. Define the Addon Repository
 ADDON_NAME="wunderio/ddev-wunderio-drupal"

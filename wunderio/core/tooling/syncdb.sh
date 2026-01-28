@@ -22,14 +22,18 @@ if [[ -z "${1:-}" ]]; then
   exit 1
 fi
 
+# Default options
+sanitize=true
+
 # The alias key is the first argument, e.g., "prod" or "myproduction"
 ALIAS_KEY="$1"
 # The full alias required by Drush, which needs the "@" prefix, e.g., "@prod"
 SITE_ALIAS="@${ALIAS_KEY}"
 
+shift 1
+
 # --- Sourcing Helper Functions ---
-# This is run in host context, so we need to use the home directory.
-source "$HOME/.ddev/wunderio/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 sql_file="${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql"
 
@@ -48,13 +52,35 @@ if ! alias_details=$(ddev drush sa "$SITE_ALIAS" 2>&1); then
   exit 1 # Exit with a non-zero status code to indicate failure
 fi
 
-# --- 3. Parse Alias Details using yq ---
-# Dynamically build the yq query path using the alias key ("prod").
-prod_ssh_user=$(ddev yq '."@self.'"$ALIAS_KEY"'".user' <<< "$alias_details")
-prod_ssh_host=$(ddev yq '."@self.'"$ALIAS_KEY"'".host' <<< "$alias_details")
-prod_ssh_options=$(ddev yq '."@self.'"$ALIAS_KEY"'".ssh.options' <<< "$alias_details")
+# Parse Alias Details using yq
+# DDEV might be injecting some messages to output so clean the output
+alias_details_clean=$(echo "$alias_details" | sed -n '/@self/,$p')
 
-# --- 4. Perform the Database Dump and Import ---
+# Dynamically build the yq query path using the alias key ("prod").
+prod_ssh_user=$(ddev yq '."@self.'"$ALIAS_KEY"'".user' <<< "$alias_details_clean")
+prod_ssh_host=$(ddev yq '."@self.'"$ALIAS_KEY"'".host' <<< "$alias_details_clean")
+prod_ssh_options=$(ddev yq '."@self.'"$ALIAS_KEY"'".ssh.options' <<< "$alias_details_clean")
+
+# --- Validate parsed SSH details ---
+if [[ -z "$prod_ssh_user" || "$prod_ssh_user" == "null" ]]; then
+  display_error_message "Missing or invalid SSH user for alias '$ALIAS_KEY'."
+  echo "Check your drush/sites/self.site.yml configuration for the 'user' field."
+  exit 1
+fi
+
+if [[ -z "$prod_ssh_host" || "$prod_ssh_host" == "null" ]]; then
+  display_error_message "Missing or invalid SSH host for alias '$ALIAS_KEY'."
+  echo "Check your drush/sites/self.site.yml configuration for the 'host' field."
+  exit 1
+fi
+
+if [[ -z "$prod_ssh_options" || "$prod_ssh_options" == "null" ]]; then
+  display_error_message "Missing or invalid SSH options for alias '$ALIAS_KEY'."
+  echo "Check your drush/sites/self.site.yml configuration for the 'ssh.options' field."
+  exit 1
+fi
+
+# --- Perform the Database Dump and Import ---
 display_status_message "Dumping database from '$SITE_ALIAS'..."
 
 ssh "$prod_ssh_user@$prod_ssh_host" "$prod_ssh_options" "drush sql-dump --structure-tables-list=cache,cache_*,history,search_*,sessions" > "$sql_file"
