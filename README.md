@@ -54,7 +54,7 @@ URL will become example.com.ddev.site.
 - To update the add-on to the latest version:
 
   ```bash
-  ddev add-on get wunderio/ddev-wunderio-drupal --update
+  ddev add-on get wunderio/ddev-wunderio-drupal
   ```
 
 ## Features
