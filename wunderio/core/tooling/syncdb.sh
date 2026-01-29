@@ -13,17 +13,17 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
+# --- Sourcing Helper Functions ---
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
+
 # --- 1. Validate Input ---
 # Check if an alias was provided as an argument.
 if [[ -z "${1:-}" ]]; then
-  echo "Error: No site alias name provided."
-  echo "Usage: ddev syncdb your_alias_name"
-  echo "Example: ddev syncdb prod"
+  display_error_message "Error: No site alias name provided."
+  display_warning_message "Usage: ddev syncdb your_alias_name"
+  display_warning_message "Example: ddev syncdb prod"
   exit 1
 fi
-
-# Default options
-sanitize=true
 
 # The alias key is the first argument, e.g., "prod" or "myproduction"
 ALIAS_KEY="$1"
@@ -32,10 +32,22 @@ SITE_ALIAS="@${ALIAS_KEY}"
 
 shift 1
 
-# --- Sourcing Helper Functions ---
-source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
+# Define the directory name.
+sql_file="./database_dumps"
 
-sql_file="${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql"
+# Check if the directory does not exist
+if [ ! -d "$sql_file" ]; then
+  # Create the directory
+  mkdir -p "$sql_file"
+
+  # Create the .gitignore file to make sure this directory doesnt leak.
+  echo "*" > "$sql_file/.gitignore"
+
+  display_status_message "Directory '$sql_file' and .gitignore file created."
+fi
+
+# Define file name for the dump.
+sql_file="./database_dumps/${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql"
 
 # Read the remote alias details from drush configuration.
 # We pass the full alias (@prod) to Drush.
@@ -64,19 +76,19 @@ prod_ssh_options=$(ddev yq '."@self.'"$ALIAS_KEY"'".ssh.options' <<< "$alias_det
 # --- Validate parsed SSH details ---
 if [[ -z "$prod_ssh_user" || "$prod_ssh_user" == "null" ]]; then
   display_error_message "Missing or invalid SSH user for alias '$ALIAS_KEY'."
-  echo "Check your drush/sites/self.site.yml configuration for the 'user' field."
+  display_warning_message "Check your drush/sites/self.site.yml configuration for the 'user' field."
   exit 1
 fi
 
 if [[ -z "$prod_ssh_host" || "$prod_ssh_host" == "null" ]]; then
   display_error_message "Missing or invalid SSH host for alias '$ALIAS_KEY'."
-  echo "Check your drush/sites/self.site.yml configuration for the 'host' field."
+  display_warning_message "Check your drush/sites/self.site.yml configuration for the 'host' field."
   exit 1
 fi
 
 if [[ -z "$prod_ssh_options" || "$prod_ssh_options" == "null" ]]; then
   display_error_message "Missing or invalid SSH options for alias '$ALIAS_KEY'."
-  echo "Check your drush/sites/self.site.yml configuration for the 'ssh.options' field."
+  display_warning_message "Check your drush/sites/self.site.yml configuration for the 'ssh.options' field."
   exit 1
 fi
 
