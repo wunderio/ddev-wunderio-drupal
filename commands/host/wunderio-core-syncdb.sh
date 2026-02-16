@@ -8,5 +8,6 @@
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:$HOME/.ddev/wunderio/core/
 
-$HOME/.ddev/wunderio/core/_run-scripts.sh tooling syncdb.sh "$@"
+wdr-core.sh tooling syncdb.sh "$@"
