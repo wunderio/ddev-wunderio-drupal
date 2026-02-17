@@ -28,6 +28,19 @@ export WUNDERIO_GLOBAL_SCRIPT_ROOT="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>
 # Expose helpers to tooling.
 source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
+# Defined project root just in case and expose it to scripts.
+if [[ -n "${DDEV_APPROOT:-}" ]]; then
+    PROJECT_ROOT="$DDEV_APPROOT"
+else
+    # Fallback to git check.
+    if PROJECT_ROOT_GIT=$(git rev-parse --show-toplevel 2>/dev/null); then
+        PROJECT_ROOT="$PROJECT_ROOT_GIT"
+    else
+        PROJECT_ROOT="$PWD"
+    fi
+fi
+export PROJECT_ROOT
+
 # Remove the first argument (the method)
 script_or_hook="$1"
 shift 1

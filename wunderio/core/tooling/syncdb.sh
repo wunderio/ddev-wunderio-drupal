@@ -32,22 +32,19 @@ SITE_ALIAS="@${ALIAS_KEY}"
 
 shift 1
 
-# Define the directory name.
-sql_file="./database_dumps"
+# Define the dumps directory at the project root.
+DUMPS_DIR="$PROJECT_ROOT/database_dumps"
 
 # Check if the directory does not exist
-if [ ! -d "$sql_file" ]; then
-  # Create the directory
-  mkdir -p "$sql_file"
-
-  # Create the .gitignore file to make sure this directory doesnt leak.
-  echo "*" > "$sql_file/.gitignore"
-
-  display_status_message "Directory '$sql_file' and .gitignore file created."
+if [ ! -d "$DUMPS_DIR" ]; then
+    mkdir -p "$DUMPS_DIR"
+    # Ignore everything we never want this folder or its contents to end up into git.
+    echo "*" > "$DUMPS_DIR/.gitignore"
+    display_status_message "Directory '$DUMPS_DIR' and .gitignore file created."
 fi
 
 # Define file name for the dump.
-sql_file="./database_dumps/${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql"
+sql_file="$DUMPS_DIR/${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql"
 
 # Read the remote alias details from drush configuration.
 # We pass the full alias (@prod) to Drush.
@@ -107,7 +104,7 @@ $ssh_command "drush sql-dump --structure-tables-list=cache,cache_*,history,searc
 display_status_message "Dump complete, starting import!"
 
 ddev import-db --file="$sql_file"
-rm "$sql_file"
+#rm "$sql_file"
 { set +x; } 2>/dev/null
 
 display_status_message "Sync with '$SITE_ALIAS' complete!"
