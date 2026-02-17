@@ -100,9 +100,9 @@ fi
 
 # Test SSH connection - allow passphrase prompt to be visible
 ssh_command="ssh $prod_ssh_user@$prod_ssh_host $prod_ssh_options"
-if ! $ssh_command "echo 'Connection successful'" 2>&1 | grep -q "Connection successful"; then
-    display_error_message "Failed to establish SSH connection to $ALIAS_KEY. Check your network and credentials."
-    exit 1
+if ! $ssh_command "true"; then
+  display_error_message "Failed to establish SSH connection to $ALIAS_KEY. Check your network and credentials."
+  exit 1
 fi
 
 # --- Perform the Database Dump and Import ---
