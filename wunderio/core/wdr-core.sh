@@ -57,7 +57,7 @@ core_script="$WUNDERIO_GLOBAL_SCRIPT_ROOT/$script_or_hook/$script_name"
 if [ -x "$legacy_custom_script" ]; then
     display_status_message "Running custom script: $legacy_custom_script"
     display_warning_message "This script runs on legacy hooks"
-    display_warning_message "  Consider to moving it into .ddev/wunderio/custom/$script_or_hook/$script_name"
+    display_warning_message "  Consider moving it into .ddev/wunderio/custom/$script_or_hook/$script_name"
     # Run the script and pass all remaining arguments.
     "$legacy_custom_script" "$@"
 elif [ -x "$custom_script" ]; then
