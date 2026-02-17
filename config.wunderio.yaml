@@ -27,7 +27,6 @@ hooks:
     - exec: "wdr-core hooks db-post-import.sh"
   post-restore-snapshot:
     - exec: "wdr-core hooks db-post-import.sh"
-web_environment:
 # When Mutagen is enabled (which it is by default in DDEV v1.19+),
 # these directories are bind-mounted directly rather than synced via Mutagen
 # This improves performance for large file directories by bypassing Mutagen's
