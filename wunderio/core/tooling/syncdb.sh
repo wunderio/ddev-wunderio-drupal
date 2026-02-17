@@ -32,6 +32,15 @@ SITE_ALIAS="@${ALIAS_KEY}"
 
 shift 1
 
+# If --keep-dump is passed, keep the dump file
+KEEP_DUMP=false
+for arg in "$@"; do
+  if [[ "$arg" == "--keep-dump" ]]; then
+    KEEP_DUMP=true
+    break
+  fi
+done
+
 # Define the dumps directory at the project root.
 DUMPS_DIR="$PROJECT_ROOT/database_dumps"
 
@@ -104,7 +113,9 @@ $ssh_command "drush sql-dump --structure-tables-list=cache,cache_*,history,searc
 display_status_message "Dump complete, starting import!"
 
 ddev import-db --file="$sql_file"
-#rm "$sql_file"
+if [[ "$KEEP_DUMP" != "true" ]]; then
+  rm "$sql_file"
+fi
 { set +x; } 2>/dev/null
 
 display_status_message "Sync with '$SITE_ALIAS' complete!"
