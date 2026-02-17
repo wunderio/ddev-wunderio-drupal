@@ -7,6 +7,5 @@
 ## Example: "ddev grumphp"
 ## AutocompleteTerms: []
 ## ExecRaw: true
-## ProjectTypes: drupal9,drupal10,drupal11
 
-"$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh" tooling-grumphp.sh "$@"
+wdr-core tooling grumphp.sh "$@"

@@ -10,10 +10,10 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 if [[ "$#" -lt 1 ]]; then
-  echo "Usage: ddev pmu <module1> <module2> ..."
+  display_warning_message "Usage: ddev pmu <module1> <module2> ..."
   exit 0
 fi
 
@@ -44,7 +44,7 @@ disable_module() {
     drush cr
 
     # Run "drush pmu" command.
-    echo "Disabling module $module_name..."
+    display_status_message "Disabling module $module_name..."
     drush pmu -y "$module_name"
 
     # Remove dummy module if it was created.

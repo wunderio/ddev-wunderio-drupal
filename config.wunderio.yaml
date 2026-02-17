@@ -4,26 +4,30 @@ hooks:
     # Install the wunderio/ddev-wunderio-drupal add-on if it's not already
     # installed. Developers don't need to do this manually. They just need to
     # clone the project and run ddev start.
-    - exec-host: 'if [ ! -d "$HOME/.ddev/wunderio/core" ]; then ddev add-on get wunderio/ddev-wunderio-drupal; fi'
-  post-import-db:
-    - exec: "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh hooks-db-post-import.sh"
-  post-restore-snapshot:
-    - exec: "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh hooks-db-post-import.sh"
+    - exec-host: 'if [ ! -d "${DDEV_GLOBAL_DIR}/wunderio/core" ]; then ddev add-on get wunderio/ddev-wunderio-drupal; fi'
   post-start:
-    # Check for the env variables to be present.
-    - exec: 'if [ -z "${DDEV_APPROOT+x}" ]; then echo -e "\e[1;31mError: Your DDEV version is too old and is missing DDEV_APPROOT. Please update DDEV. See upgrading guide https://docs.ddev.com/en/stable/users/install/ddev-upgrade/\e[0m"; fi'
     # Build hook workaround to run composer install on first start.
-    # @todo We could potentially make this more like lando build hook by creating tmp files.
-    - exec: "[ ! -d \"$DDEV_COMPOSER_ROOT/vendor\" ] && $WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh hooks-web-post-start-once.sh || true"
+    # @todo We could potentially make this work from recognizing the command.
+    - exec: |
+        if ! command -v wdr-core &> /dev/null; then
+          ln -s /mnt/ddev-global-cache/wunderio/core/wdr-core.sh /usr/local/bin/wdr-core
+        fi
+        # Run once start hook if needed
+        if [ ! -f "/mnt/wdr-hooks/ddev_web_post_start_once" ]; then
+          /usr/local/bin/wdr-core hooks web-post-start-once.sh;
+          sudo touch /mnt/wdr-hooks/ddev_web_post_start_once
+        fi
     # Script to run on every start on the host.
-    - exec-host: "~/.ddev/wunderio/core/_run-scripts.sh hooks-host-post-start.sh"
+    - exec-host: '${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh hooks host-post-start.sh'
     # Script to run on every start.
-    - exec: "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_run-scripts.sh hooks-web-post-start.sh"
+    - exec: "wdr-core hooks web-post-start.sh"
     # Update check.
-    - exec-host: "~/.ddev/wunderio/core/hooks-host-post-start-update-check.sh"
+    - exec-host: '${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh hooks host-post-start-update-check.sh'
+  post-import-db:
+    - exec: "wdr-core hooks db-post-import.sh"
+  post-restore-snapshot:
+    - exec: "wdr-core hooks db-post-import.sh"
 web_environment:
-- WUNDERIO_GLOBAL_CACHE_ROOT=/mnt/ddev-global-cache
-- WUNDERIO_GLOBAL_CACHE_WUNDERIO=/mnt/ddev-global-cache/wunderio
 # When Mutagen is enabled (which it is by default in DDEV v1.19+),
 # these directories are bind-mounted directly rather than synced via Mutagen
 # This improves performance for large file directories by bypassing Mutagen's

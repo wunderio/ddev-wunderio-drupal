@@ -10,7 +10,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 # Configuration from environment.
 # These are expected to be defined via DDEV global config, which makes them
@@ -61,7 +61,7 @@ CANDIDATE_FILES=(
     "$PROJECT_ROOT/.github/git-commit-instructions.md" # Specific GitHub docs
     "$PROJECT_ROOT/.github/copilot-instructions.md"    # GitHub Copilot docs
     "$PROJECT_ROOT/COMMIT_INSTRUCTIONS.md"             # Generic root file
-    "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/git-commit-message-instructions.md" # Global Fallback
+    "$WUNDERIO_GLOBAL_SCRIPT_ROOT/git-commit-message-instructions.md" # Global Fallback
 )
 
 COMMIT_INSTRUCTIONS=""

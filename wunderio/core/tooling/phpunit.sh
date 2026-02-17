@@ -10,7 +10,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
     set -x
 fi
 
-source "$WUNDERIO_GLOBAL_CACHE_WUNDERIO/core/_helpers.sh"
+source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 if [ ! -f "$DDEV_APPROOT/phpunit.xml" ]; then
     echo "phpunit.xml not found! Please run 'ddev regenerate-phpunit-config'."
