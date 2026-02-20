@@ -5,7 +5,8 @@ hooks:
     # Developers don't need to do this manually. They just need to clone the
     # project and run ddev start.
     # We check for wdr-core.sh existence (introduced in 0.5.0) to detect if
-    # the add-on is missing or an old version is installed that needs updating.
+    # the add-on is missing or a pre-0.5.0 version is installed. Versions 0.5.0
+    # and later are checked for updates by host-post-start-update-check.sh.
     - exec-host: 'if [ ! -f "${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh" ]; then ddev add-on get wunderio/ddev-wunderio-drupal; fi'
   post-start:
     # Build hook workaround to run composer install on first start.
