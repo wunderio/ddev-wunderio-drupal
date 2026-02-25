@@ -74,10 +74,11 @@ fi
 # DDEV might be injecting some messages to output so clean the output
 alias_details_clean=$(echo "$alias_details" | sed -n '/@self/,$p')
 
-# Dynamically build the yq query path using the alias key ("prod").
-prod_ssh_user=$(ddev yq '."@self.'"$ALIAS_KEY"'".user' <<< "$alias_details_clean")
-prod_ssh_host=$(ddev yq '."@self.'"$ALIAS_KEY"'".host' <<< "$alias_details_clean")
-prod_ssh_options=$(ddev yq '."@self.'"$ALIAS_KEY"'".ssh.options' <<< "$alias_details_clean")
+# Dynamically build the yq query path using the alias key ("main").
+alias_full="@self.${ALIAS_KEY}"
+read -r prod_ssh_user prod_ssh_host prod_ssh_options < <(
+  ddev exec -- yq -r ".\"$alias_full\" | [.user, .host, .ssh.options] | @tsv" <<< "$alias_details_clean"
+)
 
 # --- Validate parsed SSH details ---
 if [[ -z "$prod_ssh_user" || "$prod_ssh_user" == "null" ]]; then
