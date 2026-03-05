@@ -4,6 +4,16 @@
 #
 # Helper script to run post-import db hook.
 #
+# Only sanitizes the database after import. Full deployment steps
+# (updatedb, config:import, cache:rebuild, deploy:hook) should be
+# run deliberately via `ddev drush deploy`.
+#
+# Rationale: running cache:rebuild before config:import is dangerous
+# when the imported DB has schema differences from the current codebase
+# (see https://github.com/wunderio/charts/pull/514). Keeping this hook
+# minimal also keeps `ddev import-db` fast for all use cases (restoring
+# local backups, debugging specific DB states, etc.).
+#
 
 set -eu
 if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
@@ -19,14 +29,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
   exit 0
 fi
 
-# Every import is treated as deployment
-# Unified based on https://www.drush.org/12.x/deploycommand/.
-drush updatedb --no-cache-clear -y || { display_error_message "Database update failed"; exit 1; }
+# Sanitize imported database (remove sensitive data).
 drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
-drush cache:rebuild || { display_error_message "Cache rebuild failed"; exit 1; }
-drush config:import -y || { display_error_message "Config import failed"; exit 1; }
-drush cache:rebuild || { display_error_message "Final cache rebuild failed"; exit 1; }
-drush deploy:hook || { display_error_message "Deploy hook failed"; exit 1; }
 
-uli_link=$(drush uli)
-display_status_message "Drupal is working, running drush uli: $uli_link"
+display_status_message "Database imported and sanitized."
