@@ -130,7 +130,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   ```bash
   ddev syncdb <alias>                # e.g. ddev syncdb prod
   ddev syncdb prod --backup          # Back up local DB before overwriting
-  ddev syncdb prod --force            # Skip confirmation prompt
+  ddev syncdb prod --skip-hooks       # Skip ddev hooks
   ddev syncdb prod --keep-dump        # Keep the downloaded dump file
   ddev syncdb prod --backup --force   # Combine flags
   ```

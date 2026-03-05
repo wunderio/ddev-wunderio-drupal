@@ -20,11 +20,11 @@ source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 # Check if an alias was provided as an argument.
 if [[ -z "${1:-}" ]]; then
   display_error_message "Error: No site alias name provided."
-  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--force]"
+  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--skip-hooks]"
   display_warning_message "Example: ddev syncdb prod"
-  display_warning_message "  --keep-dump  Keep the downloaded dump file after import"
-  display_warning_message "  --backup     Create a local database backup before overwriting"
-  display_warning_message "  --force      Skip confirmation prompt"
+  display_warning_message "  --keep-dump   Keep the downloaded dump file after import"
+  display_warning_message "  --backup      Create a local database backup before overwriting"
+  display_warning_message "  --skip-hooks  Skip DDEV post-import hooks during database import"
   exit 1
 fi
 
@@ -38,12 +38,12 @@ shift 1
 # Parse flags
 KEEP_DUMP=false
 BACKUP=false
-FORCE=false
+SKIP_HOOKS=false
 for arg in "$@"; do
   case "$arg" in
-    --keep-dump) KEEP_DUMP=true ;;
-    --backup)    BACKUP=true ;;
-    --force)     FORCE=true ;;
+    --keep-dump)   KEEP_DUMP=true ;;
+    --backup)      BACKUP=true ;;
+    --skip-hooks)  SKIP_HOOKS=true ;;
   esac
 done
 
@@ -65,18 +65,7 @@ if ! grep -q "^${ALIAS_KEY}:" "$SITE_YML"; then
   exit 1
 fi
 
-# --- 3. Confirmation prompt (unless --force) ---
-if [[ "$FORCE" != "true" ]]; then
-  display_warning_message "This will overwrite your local database with data from '$SITE_ALIAS'."
-  printf "Continue? [y/N] "
-  read -r confirm
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    display_status_message "Aborted."
-    exit 0
-  fi
-fi
-
-# --- 4. Prepare dumps directory ---
+# --- 3. Prepare dumps directory ---
 DUMPS_DIR="$PROJECT_ROOT/database_dumps"
 
 if [ ! -d "$DUMPS_DIR" ]; then
@@ -89,7 +78,7 @@ fi
 # Use .sql.gz extension for compressed dump.
 sql_file="$DUMPS_DIR/${ALIAS_KEY}-syncdb-$(date +'%Y-%m-%d').sql.gz"
 
-# --- 5. Create local backup (if --backup) ---
+# --- 4. Create local backup (if --backup) ---
 if [[ "$BACKUP" == "true" ]]; then
   backup_file="$DUMPS_DIR/backup-$(date +'%Y-%m-%d-%H%M%S').sql.gz"
   display_status_message "Creating local database backup: $backup_file"
@@ -97,8 +86,8 @@ if [[ "$BACKUP" == "true" ]]; then
   display_status_message "Backup saved."
 fi
 
-# --- 6. Read remote alias details from Drush ---
-if ! alias_details=$(ddev drush sa "$SITE_ALIAS" 2>&1); then
+# --- 5. Read remote alias details from Drush ---
+if ! alias_details=$(ddev drush sa "$SITE_ALIAS" --format=yaml 2>&1); then
   display_error_message "Drush command failed."
   echo "--------------------------------------------------"
   echo "$alias_details"
@@ -117,7 +106,7 @@ read -r remote_ssh_user remote_ssh_host remote_ssh_options < <(
   ddev exec -- yq -r ".\"$alias_full\" | [.user, .host, .ssh.options] | @tsv" <<< "$alias_details_clean"
 )
 
-# --- Validate parsed SSH details ---
+# --- 6. Validate parsed SSH details ---
 if [[ -z "$remote_ssh_user" || "$remote_ssh_user" == "null" ]]; then
   display_error_message "Missing or invalid SSH user for alias '$ALIAS_KEY'."
   display_warning_message "Check your drush/sites/self.site.yml configuration for the 'user' field."
@@ -151,13 +140,20 @@ display_status_message "Dumping database from '$SITE_ALIAS' (gzip compressed)...
 
 display_status_message "Dump complete, starting import!"
 
+# Build import-db command with conditional flags.
 # ddev import-db natively handles .gz files.
-ddev import-db --file="$sql_file"
+import_cmd=(ddev import-db --file="$sql_file")
+
+# Full deployment steps can be ran seperatly.
+if [[ "$SKIP_HOOKS" == "true" ]]; then
+  import_cmd+=(--skip-hooks)
+fi
+
+"${import_cmd[@]}"
+
 if [[ "$KEEP_DUMP" != "true" ]]; then
   rm "$sql_file"
 fi
 { set +x; } 2>/dev/null
 
 display_status_message "Sync with '$SITE_ALIAS' complete!"
-display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
-display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
