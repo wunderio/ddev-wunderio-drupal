@@ -42,7 +42,7 @@ fi
 TARGET_BRANCH="${1:-main}"
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "HEAD")
 
-if[ "$CURRENT_BRANCH" = "$TARGET_BRANCH" ]; then
+if [ "$CURRENT_BRANCH" = "$TARGET_BRANCH" ]; then
     echo "ℹ️ You are currently on the '$TARGET_BRANCH' branch. Switch to a feature branch to perform a review."
     exit 0
 fi
@@ -84,7 +84,7 @@ fi
 # 100,000 chars is usually safe for modern models like Gemini 2.5 and GPT-4o.
 MAX_DIFF_SIZE=100000
 DIFF_LENGTH=${#DIFF}
-if[ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
+if [ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
     echo "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
     DIFF="${DIFF:0:$MAX_DIFF_SIZE}"
     DIFF="${DIFF}"$'\n'$'\n'"[... diff truncated due to size ...]"
@@ -168,7 +168,7 @@ HTTP_STATUS=$(cat "$CURL_HTTP_CODE_FILE" 2>/dev/null || echo "")
 RESPONSE=$(cat "$CURL_RESPONSE_FILE" 2>/dev/null || echo "")
 
 # Handle curl errors
-if[ $CURL_EXIT_CODE -ne 0 ] || [ "$HTTP_STATUS" -lt 200 ] ||[ "$HTTP_STATUS" -ge 300 ]; then
+if [ $CURL_EXIT_CODE -ne 0 ] || [ "$HTTP_STATUS" -lt 200 ] ||[ "$HTTP_STATUS" -ge 300 ]; then
     display_error_message "❌ Error: API request failed (cURL code: $CURL_EXIT_CODE, HTTP Status: $HTTP_STATUS)"
     if [ -n "$RESPONSE" ]; then
         echo "API Response (truncated): ${RESPONSE:0:300}..."
@@ -185,7 +185,7 @@ REVIEW_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>"$JQ_REVIE
 JQ_REVIEW_MSG_EXIT_CODE=$?
 set -e
 
-if[ $JQ_REVIEW_MSG_EXIT_CODE -ne 0 ] || [ -z "$REVIEW_MSG" ] || [ "$REVIEW_MSG" = "null" ]; then
+if [ $JQ_REVIEW_MSG_EXIT_CODE -ne 0 ] || [ -z "$REVIEW_MSG" ] || [ "$REVIEW_MSG" = "null" ]; then
     display_error_message "❌ Error: Failed to parse API response"
     exit 1
 fi
