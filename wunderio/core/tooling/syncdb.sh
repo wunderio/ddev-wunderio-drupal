@@ -157,3 +157,5 @@ fi
 { set +x; } 2>/dev/null
 
 display_status_message "Sync with '$SITE_ALIAS' complete!"
+display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
+display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
