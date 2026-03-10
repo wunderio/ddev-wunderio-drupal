@@ -20,11 +20,10 @@ source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 # Check if an alias was provided as an argument.
 if [[ -z "${1:-}" ]]; then
   display_error_message "Error: No site alias name provided."
-  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--force] [--deploy]"
+  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--deploy]"
   display_warning_message "Example: ddev syncdb prod"
   display_warning_message "  --keep-dump  Keep the downloaded dump file after import"
   display_warning_message "  --backup     Create a local database backup before overwriting"
-  display_warning_message "  --force      Skip confirmation prompt"
   display_warning_message "  --deploy     Run drush deploy and drush uli after import"
   exit 1
 fi
@@ -39,13 +38,11 @@ shift 1
 # Parse flags
 KEEP_DUMP=false
 BACKUP=false
-FORCE=false
 DEPLOY=false
 for arg in "$@"; do
   case "$arg" in
     --keep-dump) KEEP_DUMP=true ;;
     --backup)    BACKUP=true ;;
-    --force)     FORCE=true ;;
     --deploy)    DEPLOY=true ;;
   esac
 done
@@ -68,16 +65,8 @@ if ! grep -q "^${ALIAS_KEY}:" "$SITE_YML"; then
   exit 1
 fi
 
-# --- 3. Confirmation prompt (unless --force) ---
-if [[ "$FORCE" != "true" ]]; then
-  display_warning_message "This will overwrite your local database with data from '$SITE_ALIAS'."
-  printf "Continue? [y/N] "
-  read -r confirm
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    display_status_message "Aborted."
-    exit 0
-  fi
-fi
+# --- 3. Warn about overwrite ---
+display_warning_message "This will overwrite your local database with data from '$SITE_ALIAS'."
 
 # --- 4. Prepare dumps directory ---
 DUMPS_DIR="$PROJECT_ROOT/database_dumps"
