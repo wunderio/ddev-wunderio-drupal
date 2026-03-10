@@ -20,11 +20,12 @@ source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 # Check if an alias was provided as an argument.
 if [[ -z "${1:-}" ]]; then
   display_error_message "Error: No site alias name provided."
-  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--force]"
+  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--force] [--deploy]"
   display_warning_message "Example: ddev syncdb prod"
   display_warning_message "  --keep-dump  Keep the downloaded dump file after import"
   display_warning_message "  --backup     Create a local database backup before overwriting"
   display_warning_message "  --force      Skip confirmation prompt"
+  display_warning_message "  --deploy     Run drush deploy and drush uli after import"
   exit 1
 fi
 
@@ -39,11 +40,13 @@ shift 1
 KEEP_DUMP=false
 BACKUP=false
 FORCE=false
+DEPLOY=false
 for arg in "$@"; do
   case "$arg" in
     --keep-dump) KEEP_DUMP=true ;;
     --backup)    BACKUP=true ;;
     --force)     FORCE=true ;;
+    --deploy)    DEPLOY=true ;;
   esac
 done
 
@@ -154,6 +157,14 @@ if [[ "$KEEP_DUMP" != "true" ]]; then
 fi
 { set +x; } 2>/dev/null
 
+if [[ "$DEPLOY" == "true" ]]; then
+  display_status_message "Running drush deploy..."
+  ddev drush deploy -y || { display_error_message "drush deploy failed"; exit 1; }
+  display_status_message "One-time login link: $(ddev drush uli)"
+fi
+
 display_status_message "Sync with '$SITE_ALIAS' complete!"
-display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
-display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
+if [[ "$DEPLOY" != "true" ]]; then
+  display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
+  display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
+fi
