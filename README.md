@@ -13,9 +13,9 @@ scripts to enhance your Drupal development workflow.
 ### Steps
 
 1. Initialize your Drupal 10 project. Project name parameter is optional, but
-it's advisable to use domain name as your project name as that's used for
-the subdomain of ddev.site eg if project name is example.com, then localhost
-URL will become example.com.ddev.site.
+   it's advisable to use domain name as your project name as that's used for
+   the subdomain of ddev.site eg if project name is example.com, then localhost
+   URL will become example.com.ddev.site.
 
    ```bash
    ddev config --project-type=drupal10 --docroot=web --project-name=example.com

@@ -37,5 +37,8 @@ hooks:
 # The paths are relative to the project root.
 upload_dirs:
   # Configure database_dumps directory to be bind-mounted directly
-  # instead of being synced via Mutagen for better performance
+  # instead of being synced via Mutagen for better performance.
   - ../database_dumps
+  # Exclude public files directory, which can become very large.
+  - sites/default/files
+
