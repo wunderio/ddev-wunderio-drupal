@@ -229,3 +229,37 @@ startup times can be reduced from minutes to seconds.
 **Note for Linux users:** While this configuration doesn't provide performance improvements on Linux
 systems (which don't use Mutagen), it's still good practice to store database dumps in the
 dedicated `database_dumps` folder for consistent organization across team environments.
+
+### Optional Mutagen optimizations for large directories
+
+In many Drupal projects, certain directories can become very large and are generated
+artifacts that do not benefit from being synced via Mutagen.
+
+One common candidate is:
+
+- `../node_modules` at the project root (for front‑end tooling)
+
+If you notice slow DDEV startup or sync performance due to `node_modules`, you can
+optionally add it to `upload_dirs` in your **project’s** `.ddev/config.yaml`
+like this:
+
+```yaml
+upload_dirs:
+  - ../node_modules
+```
+
+This will bind‑mount `../node_modules` instead of syncing it through Mutagen. Because the
+exact directory layout and usage of `node_modules` can vary between projects, this
+template does **not** enable that exclusion by default; add it only if it makes
+sense for your project.
+
+You can also exclude `node_modules` in specific custom themes or modules by adding
+their paths explicitly, for example:
+
+```yaml
+upload_dirs:
+  - web/themes/custom/my_theme/node_modules
+  - web/modules/custom/my_module/node_modules
+```
+
+Adjust the paths to match your actual theme or module names.
