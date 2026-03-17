@@ -158,14 +158,4 @@ if [[ "$KEEP_DUMP" != "true" ]]; then
 fi
 { set +x; } 2>/dev/null
 
-if [[ "$DEPLOY" == "true" ]]; then
-  display_status_message "Running drush deploy..."
-  ddev drush deploy -y || { display_error_message "drush deploy failed"; exit 1; }
-  display_status_message "One-time login link: $(ddev drush uli)"
-fi
-
 display_status_message "Sync with '$SITE_ALIAS' complete!"
-if [[ "$DEPLOY" != "true" ]]; then
-  display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
-  display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
-fi
