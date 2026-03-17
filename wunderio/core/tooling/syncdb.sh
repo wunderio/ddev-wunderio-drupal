@@ -65,7 +65,9 @@ if ! grep -q "^${ALIAS_KEY}:" "$SITE_YML"; then
   exit 1
 fi
 
-# --- 3. Prepare dumps directory ---
+# --- 3. Prepare dumps directory and warn about overwrite ---
+display_warning_message "This will overwrite your local database with data from '$SITE_ALIAS'."
+
 DUMPS_DIR="$PROJECT_ROOT/database_dumps"
 
 if [ ! -d "$DUMPS_DIR" ]; then
@@ -156,6 +158,14 @@ if [[ "$KEEP_DUMP" != "true" ]]; then
 fi
 { set +x; } 2>/dev/null
 
+if [[ "$DEPLOY" == "true" ]]; then
+  display_status_message "Running drush deploy..."
+  ddev drush deploy -y || { display_error_message "drush deploy failed"; exit 1; }
+  display_status_message "One-time login link: $(ddev drush uli)"
+fi
+
 display_status_message "Sync with '$SITE_ALIAS' complete!"
-display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
-display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
+if [[ "$DEPLOY" != "true" ]]; then
+  display_warning_message "Run 'ddev drush deploy' to apply database updates, import config, and rebuild caches."
+  display_warning_message "Run 'ddev drush uli' to generate a one-time login link."
+fi
