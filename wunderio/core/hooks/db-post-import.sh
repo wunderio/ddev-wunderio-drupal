@@ -20,8 +20,6 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
   exit 0
 fi
 
-# Sanitize imported database (remove sensitive data).
-drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
 drush deploy -y || { display_error_message "Drupal deploy failed"; exit 1; }
 
 uli_link=$(drush uli)

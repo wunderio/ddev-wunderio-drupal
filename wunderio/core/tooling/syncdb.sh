@@ -156,6 +156,10 @@ fi
 if [[ "$KEEP_DUMP" != "true" ]]; then
   rm "$sql_file"
 fi
+
+# Sanitize imported database (remove sensitive data).
+drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
+
 { set +x; } 2>/dev/null
 
 display_status_message "Sync with '$SITE_ALIAS' complete!"
