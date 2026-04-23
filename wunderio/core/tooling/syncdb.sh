@@ -4,8 +4,6 @@
 #
 # Synchronise local database with a remote environment.
 #
-# Based on https://github.com/wunderio/unisport/blob/master/.lando/syncdb.sh
-#
 
 set -eu
 
