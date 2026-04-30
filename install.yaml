@@ -10,10 +10,22 @@ project_files:
 
 global_files:
   - commands/
-  - wunderio/core/
+  - homeadditions/
 
-post_install_actions:
+# pre_install_actions - list of actions to run before installing the addon.
+# Examples would be removing an extraneous docker volume,
+# or doing a sanity check for requirements.
+# DDEV environment variables can be interpolated into these actions
+# pre_install_actions are executed in the context of the target project's root directory.
+pre_install_actions:
   - |
-    #ddev-description: Finalizing Wunderio DDEV Drupal installation
-    echo "Wunderio DDEV Drupal installed. Managed files are marked with #ddev-generated."
-    echo "Custom scripts can be added to .ddev/wunderio/custom/ and will be preserved."
+    # Removal of hacky way to bind wdr-core to containers use homeadditions
+    # Based on maintaners comment https://github.com/orgs/ddev/discussions/7149#discussioncomment-12634740
+    if [ -f "${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh" ]; then
+      rm -rf "${DDEV_GLOBAL_DIR}/wunderio";
+    fi
+
+# When plugin is unistalled clean up the global folders.
+removal_actions:
+  - rm -rf "${DDEV_GLOBAL_DIR}/homeadditions"
+  - rm -rf "${DDEV_GLOBAL_DIR}/wunderio/core"
