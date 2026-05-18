@@ -4,7 +4,7 @@
 
 ## Description: Synchronise local database with a remote environment.
 ## Usage: syncdb
-## Example: "ddev syncdb prod" "ddev syncdb prod --backup --skip-hooks"
+## Example: "ddev syncdb prod" "ddev syncdb prod --backup --no-deploy"
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
