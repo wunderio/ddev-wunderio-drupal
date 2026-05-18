@@ -130,9 +130,9 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   ```bash
   ddev syncdb <alias>                # e.g. ddev syncdb prod
   ddev syncdb prod --backup          # Back up local DB before overwriting
-  ddev syncdb prod --deploy           # Run drush deploy and drush uli after import
+  ddev syncdb prod --skip-hooks       # Skip ddev hooks
   ddev syncdb prod --keep-dump        # Keep the downloaded dump file
-  ddev syncdb prod --backup --deploy  # Combine flags
+  ddev syncdb prod --backup --skip-hooks   # Combine flags
   ```
 
 - `yq`: Runs [yq](https://mikefarah.gitbook.io/yq) commands (YAML processor).

@@ -4,10 +4,10 @@
 
 ## Description: Synchronise local database with a remote environment.
 ## Usage: syncdb
-## Example: "ddev syncdb prod" "ddev syncdb prod --backup --deploy"
+## Example: "ddev syncdb prod" "ddev syncdb prod --backup --skip-hooks"
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:$HOME/.ddev/wunderio/core/
+export PATH="$HOME/.ddev/wunderio/core/${PATH:+:$PATH}"
 
 wdr-core.sh tooling syncdb.sh "$@"
