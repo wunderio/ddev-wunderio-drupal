@@ -18,11 +18,11 @@ source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 # Check if an alias was provided as an argument.
 if [[ -z "${1:-}" ]]; then
   display_error_message "Error: No site alias name provided."
-  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--skip-hooks]"
+  display_warning_message "Usage: ddev syncdb <alias> [--keep-dump] [--backup] [--no-deploy]"
   display_warning_message "Example: ddev syncdb prod"
   display_warning_message "  --keep-dump   Keep the downloaded dump file after import"
   display_warning_message "  --backup      Create a local database backup before overwriting"
-  display_warning_message "  --skip-hooks  Skip DDEV post-import hooks during database import"
+  display_warning_message "  --no-deploy   Skip running drush deploy after import"
   exit 1
 fi
 
@@ -36,12 +36,12 @@ shift 1
 # Parse flags
 KEEP_DUMP=false
 BACKUP=false
-SKIP_HOOKS=false
+NO_DEPLOY=false
 for arg in "$@"; do
   case "$arg" in
     --keep-dump)   KEEP_DUMP=true ;;
     --backup)      BACKUP=true ;;
-    --skip-hooks)  SKIP_HOOKS=true ;;
+    --no-deploy)   NO_DEPLOY=true ;;
   esac
 done
 
@@ -140,23 +140,18 @@ display_status_message "Dumping database from '$SITE_ALIAS' (gzip compressed)...
 
 display_status_message "Dump complete, starting import!"
 
-# Build import-db command with conditional flags.
-# ddev import-db natively handles .gz files.
-import_cmd=(ddev import-db --file="$sql_file")
-
-# Full deployment steps can be ran seperatly.
-if [[ "$SKIP_HOOKS" == "true" ]]; then
-  import_cmd+=(--skip-hooks)
+# Place marker file in the named volume so the post-import hook can read it.
+if [[ "$NO_DEPLOY" == "true" ]]; then
+  ddev exec sudo touch /mnt/wdr-hooks/.no-deploy
+  trap 'ddev exec sudo rm -f /mnt/wdr-hooks/.no-deploy' EXIT
 fi
 
-"${import_cmd[@]}"
+# ddev import-db natively handles .gz files.
+ddev import-db --file="$sql_file"
 
 if [[ "$KEEP_DUMP" != "true" ]]; then
   rm "$sql_file"
 fi
-
-# Sanitize imported database (remove sensitive data).
-ddev drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
 
 { set +x; } 2>/dev/null
 
