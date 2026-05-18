@@ -23,7 +23,7 @@ if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
 fi
 
 # Sanitize imported database (remove sensitive data).
-ddev drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
+drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
 
 if [[ -f /mnt/wdr-hooks/.no-deploy ]]; then
   rm -f /mnt/wdr-hooks/.no-deploy
