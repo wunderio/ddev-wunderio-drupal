@@ -9,7 +9,8 @@
 
 set -euo pipefail
 
-source "$HOME/.ddev/wunderio/core/_helpers.sh"
+DDEV_GLOBAL="$(ddev version | grep global-ddev-dir | awk '{print $2}')"
+source "${DDEV_GLOBAL}/homeadditions/wunderio/core/_helpers.sh"
 
 # Host-side current directory.
 HOST_PWD="$PWD"
