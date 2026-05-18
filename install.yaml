@@ -1,5 +1,5 @@
 name: ddev-wunderio-drupal
-ddev_version_constraint: ">= v1.24.3"
+ddev_version_constraint: ">= v1.25.1"
 
 # Files copied into the project root preserving paths
 # The dist folder structure mirrors the target project structure
