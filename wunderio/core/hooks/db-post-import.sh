@@ -26,7 +26,7 @@ fi
 drush sqlsan -y || { display_error_message "Database sanitization failed"; exit 1; }
 
 if [[ -f /mnt/wdr-hooks/.no-deploy ]]; then
-  rm -f /mnt/wdr-hooks/.no-deploy
+  sudo rm -f /mnt/wdr-hooks/.no-deploy
   display_status_message "Skipping drush deploy (--no-deploy)."
 else
   drush deploy -y || { display_error_message "Drupal deploy failed"; exit 1; }

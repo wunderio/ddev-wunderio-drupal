@@ -142,8 +142,8 @@ display_status_message "Dump complete, starting import!"
 
 # Place marker file in the named volume so the post-import hook can read it.
 if [[ "$NO_DEPLOY" == "true" ]]; then
-  ddev exec touch /mnt/wdr-hooks/.no-deploy
-  trap 'ddev exec rm -f /mnt/wdr-hooks/.no-deploy' EXIT
+  ddev exec sudo touch /mnt/wdr-hooks/.no-deploy
+  trap 'ddev exec sudo rm -f /mnt/wdr-hooks/.no-deploy' EXIT
 fi
 
 # ddev import-db natively handles .gz files.
