@@ -11,4 +11,4 @@
 DDEV_GLOBAL="$(ddev version | grep global-ddev-dir | awk '{print $2}')"
 export PATH="${DDEV_GLOBAL}/homeadditions/wunderio/core/${PATH:+:$PATH}"
 
-wdr-core tooling syncdb.sh "$@"
+wdr-core.sh tooling syncdb.sh "$@"
