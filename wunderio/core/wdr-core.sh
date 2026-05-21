@@ -39,7 +39,7 @@ else
         PROJECT_ROOT="$PWD"
     fi
     # Ensure DDEV_APPROOT is set for any downstream consumers.
-    DDEV_APPROOT="$PROJECT_ROOT"
+    export DDEV_APPROOT="$PROJECT_ROOT"
 fi
 
 export PROJECT_ROOT
