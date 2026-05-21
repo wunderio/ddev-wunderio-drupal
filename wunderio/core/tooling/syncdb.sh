@@ -54,7 +54,7 @@ if [[ ! -f "$SITE_YML" ]]; then
   exit 1
 fi
 
-if ! grep -q "^${ALIAS_KEY}:" "$SITE_YML"; then
+if ! grep -Fq -- "${ALIAS_KEY}:" "$SITE_YML"; then
   display_error_message "Alias '${ALIAS_KEY}' not found in drush/sites/self.site.yml"
   display_warning_message "Available aliases:"
   grep -E '^[a-zA-Z]' "$SITE_YML" | sed 's/:$//' | while read -r alias; do
