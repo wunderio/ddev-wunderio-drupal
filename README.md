@@ -130,11 +130,10 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   Requires aliases in `drush/sites/self.site.yml`.
 
   ```bash
-  ddev syncdb <alias>                # e.g. ddev syncdb prod
-  ddev syncdb prod --backup          # Back up local DB before overwriting
-  ddev syncdb prod --skip-hooks       # Skip ddev hooks
-  ddev syncdb prod --keep-dump        # Keep the downloaded dump file
-  ddev syncdb prod --backup --skip-hooks   # Combine flags
+  ddev syncdb <alias>                   # e.g. ddev syncdb prod
+  ddev syncdb prod --backup             # Back up local DB before overwriting
+  ddev syncdb prod --keep-dump          # Keep the downloaded dump file
+  ddev syncdb prod --backup --keep-dump # Combine flags
   ```
 
 - `yq`: Runs [yq](https://mikefarah.gitbook.io/yq) commands (YAML processor).
