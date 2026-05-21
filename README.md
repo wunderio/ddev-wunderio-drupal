@@ -21,7 +21,7 @@ scripts to enhance your Drupal development workflow.
    ddev config --project-type=drupalN --docroot=web --project-name=example.com
    ```
 
-   where N is the version of Drupal.
+   where `N` is the major version of Drupal (e.g., `10` or `11`).
 
 2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
@@ -120,7 +120,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   ddev phpcs
   ```
 
-- `phpstan`: Runs PHPStan commands. Usually, the directory to be scanned is web/modules/custom or a module in the said directory.
+- `phpstan`: Runs PHPStan commands. Usually, the directory to be scanned is `web/modules/custom` or a specific module within that directory.
 
   ```bash
   ddev phpstan analyze <directory-or-module-to-be-scanned>
@@ -166,7 +166,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
 ### Enhanced Configuration
 
 1. **Custom DDEV Configuration**
-   - Post-start scripts for both host and web containers — by default it gives you a uli link.
+   - Post-start scripts for both host and web containers — by default it gives you a `uli` link.
    - Automatic update checks for this package.
 
 2. **Performance Optimizations**
