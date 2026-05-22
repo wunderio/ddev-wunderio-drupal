@@ -18,10 +18,10 @@ scripts to enhance your Drupal development workflow.
    URL will become example.com.ddev.site.
 
    ```bash
-   ddev config --project-type=drupalN --docroot=web --project-name=example.com
+   ddev config --project-type=drupal11 --docroot=web --project-name=example.com
    ```
 
-   where `N` is the major version of Drupal (e.g., `10` or `11`).
+   Choose major version of Drupal based on your actual Drupal (e.g., `10` or `11`).
 
 2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
