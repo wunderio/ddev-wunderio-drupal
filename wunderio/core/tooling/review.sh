@@ -3,9 +3,9 @@
 
 #
 # Helper script to perform AI Code Review on the current branch against a target branch (default: main).
-# Usage: ddev ai-review [target-branch]
-# Example: ddev ai-review
-# Example: ddev ai-review develop
+# Usage: ddev review [target-branch]
+# Example: ddev eview
+# Example: ddev review develop
 #
 
 set -eu
