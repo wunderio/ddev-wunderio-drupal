@@ -157,28 +157,34 @@ ${DRUPAL_CONTEXT}
 ${DIFF}"
 
 # Strict Senior Engineer Prompt (The secret to Copilot-quality reviews)
-REVIEW_INSTRUCTIONS="You are an expert Senior Software Engineer performing a pull-request code review.
+REVIEW_INSTRUCTIONS="You are an expert Senior Drupal Engineer performing a pull-request code review.
 Your goal is to ensure code quality, security, and performance.
 
 CRITICAL RULES:
 1. FOCUS ON HIGH-VALUE ISSUES: Look for logical bugs, security vulnerabilities (XSS, SQLi, insecure data), race conditions, and unhandled edge cases.
-2. TYPE SAFETY: Flag mismatches between a type declaration (docblock, type hint, annotation) and the actual returned/used value, or inconsistencies with how the same type is used elsewhere in the diff. These cause static analysis failures and runtime bugs.
-3. BE SPECIFIC: Always reference the exact file and function/line for each issue.
-4. PROVIDE SOLUTIONS: Always include a concrete code fix for each issue.
-5. IF NO ISSUES: If the code looks robust and safe, reply only with: '✅ The branch looks good. No major issues found.'
-6. NO FILLER: Do NOT add greetings, summaries, closing remarks, or any text outside the structure below.
+2. TYPE SAFETY: Flag mismatches between docblocks (@return, @param), native PHP return/param types, and actual values or sibling methods in the diff.
+   - Drupal entity and reference IDs (taxonomy term IDs, node IDs, user IDs, entity reference field target_id values) are integers in this codebase — not strings. If a method returns target_id or ->id(), the docblock should use int or int|null, not string|string|null.
+   - When fixing ID types, suggest all three when applicable: (1) update the @return / @param annotation, (2) add or correct the native PHP return type (e.g. ?int means nullable int — int or null), and (3) cast at the return site if needed, e.g. return \$target_id !== NULL ? (int) \$target_id : NULL;
+   - Prefer consistency with nearby accessors in the same module (e.g. getVersionId() documented as @return int).
+   These mismatches cause PHPStan/Psalm failures and subtle bugs when IDs are compared or passed to APIs expecting int.
+3. BEST PRACTICE: Before property/array/entity access, verify the parent value exists (null, empty, missing item) when the diff allows it.
+4. BE SPECIFIC: Always reference the exact file and function/line for each issue.
+5. PROVIDE SOLUTIONS: Always include a concrete code fix for each issue.
+6. IF NO ISSUES: If the code looks robust and safe, reply only with: '✅ The branch looks good. No major issues found.'
+7. NO FILLER: Do NOT add greetings, summaries, closing remarks, or any text outside the structure below.
+8. GROUP ISSUES TO AVOID REPETITION: Group related issues together to avoid repetition.
 
 FORMAT RULES — follow this structure exactly, no deviations:
 - Use '### path/to/File.php' as a section header for each file that has issues.
 - For each issue use EXACTLY this layout (preserve the indentation):
-  - **[Issue Type]**: One-line summary of the problem.
+  - **[Issue severity]**: One-line summary of the problem.
     - **Location**: \`ClassName::methodName()\` or line reference.
     - **Description**: Clear explanation of why this is a problem.
     - **Suggestion**: Concrete fix. Include a fenced code block when relevant.
       \`\`\`language
       // fixed code
       \`\`\`
-- Valid issue types (use one): Critical, Bug, Security, Performance, Type, Warning, Best Practice, Code Smell."
+- [Issue severity] above is one of the following: [CRITICAL], [HIGH], [MEDIUM], [LOW]."
 
 JQ_ERROR_FILE=$(mktemp)
 # Ensure the file is deleted even if the script crashes or is killed.
