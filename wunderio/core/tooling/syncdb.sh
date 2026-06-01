@@ -119,6 +119,14 @@ if [[ -z "$remote_ssh_host" || "$remote_ssh_host" == "null" ]]; then
   exit 1
 fi
 
+if [[ "$remote_ssh_host" == *'${'* ]]; then
+  display_error_message "Unresolved placeholders in SSH host for alias '$ALIAS_KEY': $remote_ssh_host"
+  display_warning_message "Drush site aliases still contain \${ENVIRONMENT}, \${REPOSITORY}, or \${PROJECT}."
+  display_warning_message "Ensure drush/Commands/SiltaAliasAlterCommands.php is up to date and run: ddev drush cc drush"
+  display_warning_message "Verify git remote.origin.url is set in the project root."
+  exit 1
+fi
+
 if [[ -z "$remote_ssh_options" || "$remote_ssh_options" == "null" ]]; then
   display_error_message "Missing or invalid SSH options for alias '$ALIAS_KEY'."
   display_warning_message "Check your drush/sites/self.site.yml configuration for the 'ssh.options' field."
