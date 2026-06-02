@@ -120,10 +120,11 @@ if [[ -z "$remote_ssh_host" || "$remote_ssh_host" == "null" ]]; then
 fi
 
 if [[ "$remote_ssh_host" == *'${'* ]]; then
-  display_error_message "Unresolved placeholders in SSH host for alias '$ALIAS_KEY': $remote_ssh_host"
-  display_warning_message "Drush site aliases still contain \${ENVIRONMENT}, \${REPOSITORY}, or \${PROJECT}."
-  display_warning_message "Ensure drush/Commands/SiltaAliasAlterCommands.php is up to date and run: ddev drush cc drush"
-  display_warning_message "Verify git remote.origin.url is set in the project root."
+  display_error_message "Unresolved placeholder(s) in SSH host for alias '$ALIAS_KEY': $remote_ssh_host"
+  display_warning_message "Your Drush site alias host still contains template variables."
+  display_warning_message "Ensure alias placeholders are resolved before syncdb (e.g. via SiteAliasAlterCommands)."
+  display_warning_message "See: https://www.drush.org/13.x/examples/SiteAliasAlterCommands.php/"
+  display_warning_message "For Mearra projects, copy: https://github.com/wunderio/drupal-project/blob/main/drush/Commands/SiltaAliasAlterCommands.php"
   exit 1
 fi
 
