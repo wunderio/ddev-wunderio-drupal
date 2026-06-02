@@ -124,7 +124,7 @@ if [[ "$remote_ssh_host" == *'${'* ]]; then
   display_warning_message "Your Drush site alias host still contains template variables."
   display_warning_message "Ensure alias placeholders are resolved before syncdb (e.g. via SiteAliasAlterCommands)."
   display_warning_message "See: https://www.drush.org/13.x/examples/SiteAliasAlterCommands.php/"
-  display_warning_message "For Mearra projects, copy: https://github.com/wunderio/drupal-project/blob/main/drush/Commands/SiltaAliasAlterCommands.php"
+  display_warning_message "For Mearra projects, copy https://github.com/wunderio/drupal-project/blob/main/drush/Commands/SiltaAliasAlterCommands.php to drush/Commands/SiltaAliasAlterCommands.php"
   exit 1
 fi
 
