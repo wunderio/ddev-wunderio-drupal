@@ -119,6 +119,15 @@ if [[ -z "$remote_ssh_host" || "$remote_ssh_host" == "null" ]]; then
   exit 1
 fi
 
+if [[ "$remote_ssh_host" == *'${'* ]]; then
+  display_error_message "Unresolved placeholder(s) in SSH host for alias '$ALIAS_KEY': $remote_ssh_host"
+  display_warning_message "Your Drush site alias host still contains template variables."
+  display_warning_message "Ensure alias placeholders are resolved before syncdb (e.g. via SiteAliasAlterCommands)."
+  display_warning_message "See: https://www.drush.org/13.x/examples/SiteAliasAlterCommands.php/"
+  display_warning_message "For Mearra projects, copy https://github.com/wunderio/drupal-project/blob/main/drush/Commands/SiltaAliasAlterCommands.php to drush/Commands/SiltaAliasAlterCommands.php"
+  exit 1
+fi
+
 if [[ -z "$remote_ssh_options" || "$remote_ssh_options" == "null" ]]; then
   display_error_message "Missing or invalid SSH options for alias '$ALIAS_KEY'."
   display_warning_message "Check your drush/sites/self.site.yml configuration for the 'ssh.options' field."
