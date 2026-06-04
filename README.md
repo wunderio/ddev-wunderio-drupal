@@ -13,13 +13,15 @@ scripts to enhance your Drupal development workflow.
 ### Steps
 
 1. Initialize your Drupal project. Project name parameter is optional, but
-it's advisable to use domain name as your project name as that's used for
-the subdomain of ddev.site eg if project name is example.com, then localhost
-URL will become example.com.ddev.site.
+   it's advisable to use domain name as your project name as that's used for
+   the subdomain of ddev.site eg if project name is example.com, then localhost
+   URL will become example.com.ddev.site.
 
    ```bash
-   ddev config --project-type=drupal --docroot=web --project-name=example.com
+   ddev config --project-type=drupal11 --docroot=web --project-name=example.com
    ```
+
+   Choose major version of Drupal based on your actual Drupal (e.g., `10` or `11`).
 
 2. Install Wunderio DDEV Drupal as a DDEV add-on and restart DDEV:
 
@@ -118,7 +120,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   ddev phpcs
   ```
 
-- `phpstan`: Runs PHPStan commands. Usually, the directory to be scanned is web/modules/custom or a module in the said directory.
+- `phpstan`: Runs PHPStan commands. Usually, the directory to be scanned is `web/modules/custom` or a specific module within that directory.
 
   ```bash
   ddev phpstan analyze <directory-or-module-to-be-scanned>
@@ -128,11 +130,11 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   Requires aliases in `drush/sites/self.site.yml`.
 
   ```bash
-  ddev syncdb <alias>                # e.g. ddev syncdb prod
-  ddev syncdb prod --backup          # Back up local DB before overwriting
-  ddev syncdb prod --skip-hooks       # Skip ddev hooks
-  ddev syncdb prod --keep-dump        # Keep the downloaded dump file
-  ddev syncdb prod --backup --skip-hooks   # Combine flags
+  ddev syncdb <alias>                   # e.g. ddev syncdb prod
+  ddev syncdb prod --backup             # Back up local DB before overwriting
+  ddev syncdb prod --keep-dump          # Keep the downloaded dump file
+  ddev syncdb prod --no-deploy          # Skip running drush deploy after import
+  ddev syncdb prod --backup --keep-dump # Combine flags
   ```
 
 - `yq`: Runs [yq](https://mikefarah.gitbook.io/yq) commands (YAML processor).
@@ -164,7 +166,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
 ### Enhanced Configuration
 
 1. **Custom DDEV Configuration**
-   - Post-start scripts for both host and web containers — by default it gives you a uli link.
+   - Post-start scripts for both host and web containers — by default it gives you a `uli` link.
    - Automatic update checks for this package.
 
 2. **Performance Optimizations**
