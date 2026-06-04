@@ -3,6 +3,7 @@
 
 #
 # Helper script to perform AI Code Review on the current branch against a target branch (default: main).
+# Uses GitHub Copilot CLI in the agents container (same as `ddev copilot`).
 # Usage: ddev review [target-branch]
 # Example: ddev review
 # Example: ddev review develop
@@ -65,24 +66,6 @@ render_markdown() {
     done
 }
 
-# Configuration from environment.
-OPENAI_API_URL="${OPENAI_API_URL:-}"
-OPENAI_API_KEY="${OPENAI_API_KEY:-}"
-# Modern models (Gemini 1.5/2.5 Pro, GPT-4o, Claude 3.5 Sonnet) are highly recommended for deep reviews.
-# Flash is fast, but Pro models catch more complex logic bugs.
-MODEL="google_genai.gemini-2.5-pro"
-MAX_TOKENS=8000
-
-# Validate environment variables.
-if [ -z "$OPENAI_API_URL" ] || [ -z "$OPENAI_API_KEY" ]; then
-    display_error_message "❌ Error: Required OpenAI environment variables are not set"
-    echo "Set the missing variables in DDEV global config, then restart your DDEV project:"
-    echo "  ddev config global --web-environment-add=\"OPENAI_API_URL=https://your-api-url\""
-    echo "  ddev config global --web-environment-add=\"OPENAI_API_KEY=your-api-key\""
-    echo "  ddev restart"
-    exit 1
-fi
-
 # Determine branches
 TARGET_BRANCH="${1:-main}"
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "HEAD")
@@ -105,7 +88,7 @@ if ! git show-ref --verify --quiet "refs/heads/$TARGET_BRANCH" && ! git show-ref
     fi
 fi
 
-echo "🕵️  Analyzing changes on '$CURRENT_BRANCH' against '$TARGET_BRANCH' using ${MODEL}..."
+echo "🕵️  Analyzing changes on '$CURRENT_BRANCH' against '$TARGET_BRANCH' using GitHub Copilot..."
 
 # Detect Drupal version from the installed core (most accurate source).
 DRUPAL_VERSION=$(grep -oE "[0-9]+\.[0-9]+(\.[0-9]+)?" web/core/lib/Drupal.php 2>/dev/null | head -1 || echo "")
@@ -186,99 +169,92 @@ FORMAT RULES — follow this structure exactly, no deviations:
       \`\`\`
 - [Issue severity] above is one of the following: [CRITICAL], [HIGH], [MEDIUM], [LOW]."
 
-JQ_ERROR_FILE=$(mktemp)
-# Ensure the file is deleted even if the script crashes or is killed.
-trap 'rm -f "$JQ_ERROR_FILE"' EXIT
+# Build the Copilot prompt (system instructions + diff context).
+COPILOT_PROMPT="${REVIEW_INSTRUCTIONS}
 
-# Build JSON payload with jq (handles escaping properly)
-PAYLOAD=$(
-  model="$MODEL" \
-  max_tokens="$MAX_TOKENS" \
-  context="$CONTEXT" \
-  instructions="$REVIEW_INSTRUCTIONS" \
-  jq -n \
-  '{
-    model: $ENV.model,
-    messages:[
-      {
-        role: "system",
-        content: $ENV.instructions
-      },
-      {
-        role: "user",
-        content: ("Please review the following pull-request style changes:\n\n" + $ENV.context)
-      }
-    ],
-    temperature: 0.2,
-    max_tokens: ($ENV.max_tokens | tonumber)
-  }' 2>"$JQ_ERROR_FILE"
-)
-JQ_EXIT_CODE=$?
-JQ_ERROR=$(cat "$JQ_ERROR_FILE" 2>/dev/null || echo "")
+Please review the following pull-request style changes:
 
-# Validate that jq succeeded and produced valid JSON.
-if [ $JQ_EXIT_CODE -ne 0 ] || [ -z "$PAYLOAD" ] || [ "$PAYLOAD" = "null" ]; then
-    display_error_message "❌ Error: Failed to build API request payload"
-    if [ -n "$JQ_ERROR" ]; then echo "jq error: $JQ_ERROR"; fi
+${CONTEXT}"
+
+# Resolve DDEV project (host command; same as .ddev/commands/host/copilot).
+DDEV_PROJECT="${DDEV_PROJECT:-}"
+if [ -z "$DDEV_PROJECT" ]; then
+    DDEV_PROJECT=$(ddev describe -j 2>/dev/null | jq -r '.raw.name' 2>/dev/null || echo "")
+fi
+if [ -z "$DDEV_PROJECT" ]; then
+    display_error_message "❌ Error: Could not determine DDEV project name"
     exit 1
 fi
 
-CURL_RESPONSE_FILE=$(mktemp)
-CURL_HTTP_CODE_FILE=$(mktemp)
+AGENTS_CONTAINER="ddev-${DDEV_PROJECT}-agents"
 
-# Ensure temp files are cleaned up on exit.
-trap 'rm -f "$CURL_RESPONSE_FILE" "$CURL_HTTP_CODE_FILE" "$JQ_ERROR_FILE"' EXIT
-
-# Call API.
-set +e
-curl -s -f -X POST "${OPENAI_API_URL}/chat/completions" \
-  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
-  -H "Content-Type: application/json" \
-  -d "$PAYLOAD" \
-  -w "%{http_code}" -o "$CURL_RESPONSE_FILE" > "$CURL_HTTP_CODE_FILE"
-CURL_EXIT_CODE=$?
-set -e
-
-HTTP_STATUS=$(cat "$CURL_HTTP_CODE_FILE" 2>/dev/null || echo "")
-RESPONSE=$(cat "$CURL_RESPONSE_FILE" 2>/dev/null || echo "")
-
-if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
-    echo "--- RAW API RESPONSE ---"
-    echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
-    echo "--- END RAW API RESPONSE ---"
-fi
-
-# Handle curl errors
-if [ $CURL_EXIT_CODE -ne 0 ] || [ "$HTTP_STATUS" -lt 200 ] ||[ "$HTTP_STATUS" -ge 300 ]; then
-    display_error_message "❌ Error: API request failed (cURL code: $CURL_EXIT_CODE, HTTP Status: $HTTP_STATUS)"
-    if [ -n "$RESPONSE" ]; then
-        echo "API Response (truncated): ${RESPONSE:0:300}..."
-    fi
+if ! docker ps --format '{{.Names}}' | grep -q "$AGENTS_CONTAINER"; then
+    display_error_message "❌ Error: agents container is not running"
+    echo "👉 Run 'ddev start' first"
     exit 1
 fi
 
-# Extract message.
-JQ_REVIEW_MSG_ERROR_FILE=$(mktemp)
-trap 'rm -f "$JQ_REVIEW_MSG_ERROR_FILE" "$CURL_RESPONSE_FILE" "$CURL_HTTP_CODE_FILE" "$JQ_ERROR_FILE"' EXIT
-
-set +e
-REVIEW_MSG=$(echo "$RESPONSE" | jq -r '.choices[0].message.content' 2>"$JQ_REVIEW_MSG_ERROR_FILE")
-JQ_REVIEW_MSG_EXIT_CODE=$?
-set -e
-
-if [ $JQ_REVIEW_MSG_EXIT_CODE -ne 0 ] || [ -z "$REVIEW_MSG" ] || [ "$REVIEW_MSG" = "null" ]; then
-    display_error_message "❌ Error: Failed to parse API response"
+if ! docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "ddev-${DDEV_PROJECT}-devcontainer:latest"; then
+    display_error_message "❌ Error: devcontainer image not built"
+    echo "👉 Run 'ddev restart' to build the agents devcontainer"
     exit 1
 fi
 
-# Print the final output
+if ! docker exec "$AGENTS_CONTAINER" bash -c "command -v copilot &> /dev/null"; then
+    display_error_message "❌ Error: copilot CLI not found in agents container"
+    echo "👉 Ensure the devcontainer has the 'ghcr.io/devcontainers/features/copilot-cli' feature"
+    exit 1
+fi
+
+if ! docker exec "$AGENTS_CONTAINER" bash -c '[ -n "$GH_TOKEN" ]'; then
+    display_error_message "❌ Error: GH_TOKEN not found in agents container"
+    echo "👉 Set DDEV_AGENTS_GH_TOKEN on your host (see README for instructions)"
+    exit 1
+fi
+
+PROMPT_FILE=$(mktemp)
+OUTPUT_FILE=$(mktemp)
+trap 'rm -f "$PROMPT_FILE" "$OUTPUT_FILE"' EXIT
+printf '%s' "$COPILOT_PROMPT" > "$PROMPT_FILE"
+
 echo ""
 echo "=========================================="
 echo "         🤖 AI CODE REVIEW REPORT         "
 echo "=========================================="
 echo ""
+echo "⏳ Running Copilot review (large diffs can take several minutes)..."
+echo ""
 
-# Try to use 'glow' for pretty Markdown rendering in the terminal if it's installed
+# Pipe prompt on stdin (safe for huge diffs and shell-special chars in patches).
+set +e
+docker exec -i "$AGENTS_CONTAINER" bash -c 'cd /workspace && exec timeout 600 copilot -s --no-ask-user' < "$PROMPT_FILE" >"$OUTPUT_FILE" 2>&1
+COPILOT_EXIT_CODE=$?
+set -e
+
+REVIEW_MSG=$(cat "$OUTPUT_FILE" 2>/dev/null || echo "")
+
+if [[ -n "${WUNDERIO_DEBUG:-}" ]]; then
+    echo "--- RAW COPILOT RESPONSE ---"
+    echo "$REVIEW_MSG"
+    echo "--- END RAW COPILOT RESPONSE ---"
+fi
+
+if [ $COPILOT_EXIT_CODE -eq 124 ]; then
+    display_error_message "❌ Error: Copilot review timed out after 10 minutes"
+    exit 1
+fi
+
+if [ $COPILOT_EXIT_CODE -ne 0 ]; then
+    display_error_message "❌ Error: Copilot review failed (exit code: $COPILOT_EXIT_CODE)"
+    exit 1
+fi
+
+if [ -z "$REVIEW_MSG" ]; then
+    display_error_message "❌ Error: Copilot returned an empty response"
+    exit 1
+fi
+
+echo ""
 if command -v glow &> /dev/null; then
     echo "$REVIEW_MSG" | glow -
 else
@@ -287,6 +263,6 @@ fi
 
 echo ""
 echo "======================================================"
-echo "  Model: ${MODEL} | Max tokens: ${MAX_TOKENS}"
+echo "  Powered by GitHub Copilot (agents container)"
 echo "======================================================"
 echo ""
