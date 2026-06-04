@@ -4,9 +4,11 @@
 #
 # Helper script to perform AI Code Review on the current branch against a target branch (default: main).
 # Uses GitHub Copilot CLI in the agents container (same as `ddev copilot`).
-# Usage: ddev review [target-branch]
+# Usage: ddev review [target-branch] [--model MODEL]
 # Example: ddev review
 # Example: ddev review develop
+# Example: ddev review --model gpt-5-mini
+# Example: ddev review develop --model gpt-5.2
 #
 
 set -eu
@@ -66,8 +68,39 @@ render_markdown() {
     done
 }
 
-# Determine branches
-TARGET_BRANCH="${1:-main}"
+# Copilot model: --model flag > WUNDERIO_REVIEW_MODEL > default.
+MODEL="${WUNDERIO_REVIEW_MODEL:-gpt-5-mini}"
+TARGET_BRANCH="main"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --model)
+            if [[ $# -lt 2 ]] || [[ -z "${2:-}" ]]; then
+                display_error_message "❌ Error: --model requires a value"
+                exit 1
+            fi
+            MODEL="$2"
+            shift 2
+            ;;
+        --model=*)
+            MODEL="${1#--model=}"
+            if [ -z "$MODEL" ]; then
+                display_error_message "❌ Error: --model requires a value"
+                exit 1
+            fi
+            shift
+            ;;
+        -*)
+            display_error_message "❌ Error: Unknown option: $1"
+            exit 1
+            ;;
+        *)
+            TARGET_BRANCH="$1"
+            shift
+            ;;
+    esac
+done
+
 CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "HEAD")
 
 if [ "$CURRENT_BRANCH" = "$TARGET_BRANCH" ]; then
@@ -88,7 +121,7 @@ if ! git show-ref --verify --quiet "refs/heads/$TARGET_BRANCH" && ! git show-ref
     fi
 fi
 
-echo "🕵️  Analyzing changes on '$CURRENT_BRANCH' against '$TARGET_BRANCH' using GitHub Copilot..."
+echo "🕵️  Analyzing changes on '$CURRENT_BRANCH' against '$TARGET_BRANCH' using GitHub Copilot (${MODEL})..."
 
 # Detect Drupal version from the installed core (most accurate source).
 DRUPAL_VERSION=$(grep -oE "[0-9]+\.[0-9]+(\.[0-9]+)?" web/core/lib/Drupal.php 2>/dev/null | head -1 || echo "")
@@ -227,7 +260,7 @@ echo ""
 
 # Pipe prompt on stdin (safe for huge diffs and shell-special chars in patches).
 set +e
-docker exec -i "$AGENTS_CONTAINER" bash -c 'cd /workspace && exec timeout 600 copilot -s --no-ask-user' < "$PROMPT_FILE" >"$OUTPUT_FILE" 2>&1
+docker exec -i "$AGENTS_CONTAINER" bash -c "cd /workspace && exec timeout 600 copilot -s --no-ask-user --model $(printf '%q' "$MODEL")" < "$PROMPT_FILE" >"$OUTPUT_FILE" 2>&1
 COPILOT_EXIT_CODE=$?
 set -e
 
@@ -246,6 +279,9 @@ fi
 
 if [ $COPILOT_EXIT_CODE -ne 0 ]; then
     display_error_message "❌ Error: Copilot review failed (exit code: $COPILOT_EXIT_CODE)"
+    if [ -n "$REVIEW_MSG" ]; then
+        echo "$REVIEW_MSG"
+    fi
     exit 1
 fi
 
@@ -263,6 +299,6 @@ fi
 
 echo ""
 echo "======================================================"
-echo "  Powered by GitHub Copilot (agents container)"
+echo "  Model: ${MODEL} | Powered by GitHub Copilot (agents container)"
 echo "======================================================"
 echo ""
