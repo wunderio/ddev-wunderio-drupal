@@ -16,12 +16,12 @@ global_files:
 pre_install_actions:
   - |
     # Removal of hacky way to bind wdr-core to containers use homeadditions
-    # Based on maintaners comment https://github.com/orgs/ddev/discussions/7149#discussioncomment-12634740
+    # Based on maintainers comment https://github.com/orgs/ddev/discussions/7149#discussioncomment-12634740
     if [ -f "${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh" ]; then
       rm -rf "${DDEV_GLOBAL_DIR}/wunderio";
     fi
 
-# When plugin is unistalled clean up the global folders.
+# When plugin is uninstalled clean up the global folders.
 removal_actions:
-  - rm -rf "${DDEV_GLOBAL_DIR}/homeadditions"
+  - rm -rf "${DDEV_GLOBAL_DIR}/homeadditions/wunderio"
   - rm -rf "${DDEV_GLOBAL_DIR}/wunderio/core"
