@@ -46,9 +46,21 @@ for arg in "$@"; do
 done
 
 # --- 2. Validate drush/sites/self.site.yml and alias upfront ---
-SITE_YML="$PROJECT_ROOT/drush/sites/self.site.yml"
-if [[ ! -f "$SITE_YML" ]]; then
-  display_error_message "Missing drush/sites/self.site.yml"
+# Fallback loop to check for drush sites configuration
+SITE_YML=""
+for path in \
+  "$DDEV_COMPOSER_ROOT/drush/sites/self.site.yml" \
+  "$PROJECT_ROOT/drush/sites/self.site.yml"; do
+  if [[ -f "$path" ]]; then
+    SITE_YML="$path"
+    break
+  fi
+done
+
+if [[ -z "$SITE_YML" ]]; then
+  display_error_message "Missing drush/sites/self.site.yml in any of:"
+  display_error_message "  - $DDEV_COMPOSER_ROOT/drush/sites/self.site.yml"
+  display_error_message "  - $PROJECT_ROOT/drush/sites/self.site.yml"
   display_warning_message "This file defines SSH aliases for remote environments."
   display_warning_message "See https://www.drush.org/13.x/site-aliases/ for format."
   exit 1

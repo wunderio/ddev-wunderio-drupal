@@ -1,5 +1,5 @@
 name: ddev-wunderio-drupal
-ddev_version_constraint: ">= v1.24.3"
+ddev_version_constraint: ">= v1.25.1"
 
 # Files copied into the project root preserving paths
 # The dist folder structure mirrors the target project structure
@@ -10,10 +10,18 @@ project_files:
 
 global_files:
   - commands/
-  - wunderio/core/
+  - homeadditions/
 
-post_install_actions:
+# pre_install_actions - list of actions to run before installing the addon.
+pre_install_actions:
   - |
-    #ddev-description: Finalizing Wunderio DDEV Drupal installation
-    echo "Wunderio DDEV Drupal installed. Managed files are marked with #ddev-generated."
-    echo "Custom scripts can be added to .ddev/wunderio/custom/ and will be preserved."
+    # Removal of hacky way to bind wdr-core to containers use homeadditions
+    # Based on maintainers comment https://github.com/orgs/ddev/discussions/7149#discussioncomment-12634740
+    if [ -f "${DDEV_GLOBAL_DIR}/wunderio/core/wdr-core.sh" ]; then
+      rm -rf "${DDEV_GLOBAL_DIR}/wunderio";
+    fi
+
+# When plugin is uninstalled clean up the global folders.
+removal_actions:
+  - rm -rf "${DDEV_GLOBAL_DIR}/homeadditions/wunderio"
+  - rm -rf "${DDEV_GLOBAL_DIR}/wunderio/core"
