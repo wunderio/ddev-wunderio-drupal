@@ -154,14 +154,10 @@ if [ -z "$DIFF" ]; then
     exit 0
 fi
 
-# Truncate diff if it's too large to avoid exceeding API token limits.
-# 100,000 chars is usually safe for modern models like Gemini 2.5 and GPT-4o.
-MAX_DIFF_SIZE=100000
+# Large diffs may take longer to process but are sent in full via the Copilot CLI.
 DIFF_LENGTH=${#DIFF}
-if [ "$DIFF_LENGTH" -gt "$MAX_DIFF_SIZE" ]; then
-    echo "⚠️  Warning: Diff is very large (${DIFF_LENGTH} chars). Truncating to first ${MAX_DIFF_SIZE} characters for API request."
-    DIFF="${DIFF:0:$MAX_DIFF_SIZE}"
-    DIFF="${DIFF}"$'\n'$'\n'"[... diff truncated due to size ...]"
+if [ "$DIFF_LENGTH" -gt 100000 ]; then
+    echo "ℹ️  Large diff detected (${DIFF_LENGTH} chars). This may take a few extra minutes to process."
 fi
 
 # Build context
