@@ -50,7 +50,10 @@ done
 SITE_YML=""
 for path in \
   "$DDEV_COMPOSER_ROOT/drush/sites/self.site.yml" \
-  "$PROJECT_ROOT/drush/sites/self.site.yml"; do
+  "$PROJECT_ROOT/drush/sites/self.site.yml" \
+  "$DDEV_APPROOT/${DDEV_COMPOSER_ROOT##*/}/drush/sites/self.site.yml" \
+  "$PROJECT_ROOT/drupal/drush/sites/self.site.yml"; do
+    echo "$path"
   if [[ -f "$path" ]]; then
     SITE_YML="$path"
     break
