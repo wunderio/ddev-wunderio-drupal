@@ -47,12 +47,13 @@ done
 
 # --- 2. Validate drush/sites/self.site.yml and alias upfront ---
 # Fallback loop to check for drush sites configuration
+# Derive relative composer root from container path
+COMPOSER_REL="${DDEV_COMPOSER_ROOT#/var/www/html}"
+
 SITE_YML=""
 for path in \
-  "$DDEV_COMPOSER_ROOT/drush/sites/self.site.yml" \
-  "$PROJECT_ROOT/drush/sites/self.site.yml" \
-  "$DDEV_APPROOT/${DDEV_COMPOSER_ROOT##*/}/drush/sites/self.site.yml" \
-  "$PROJECT_ROOT/drupal/drush/sites/self.site.yml"; do
+  "$PROJECT_ROOT${COMPOSER_REL}/drush/sites/self.site.yml" \
+  "$PROJECT_ROOT/drush/sites/self.site.yml"; do
   if [[ -f "$path" ]]; then
     SITE_YML="$path"
     break
