@@ -45,6 +45,10 @@ fi
 export PROJECT_ROOT
 
 # Remove the first argument (the method)
+if [[ $# -lt 1 ]]; then
+    display_error_message "Usage: wdr-core [tooling|hooks] script-name"
+    exit 1
+fi
 script_or_hook="$1"
 shift 1
 
