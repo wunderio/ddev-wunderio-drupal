@@ -74,7 +74,7 @@ if [[ -n "$SELECTED_ARG" ]]; then
     if [[ "$candidate" == database_dumps/* ]]; then
       candidate="$PROJECT_ROOT/$candidate"
     else
-      candidate="$DUMPS_DIR/$(basename "$candidate")"
+      candidate="$DUMPS_DIR/$candidate"
     fi
   fi
 
@@ -93,7 +93,8 @@ if [[ -n "$SELECTED_ARG" ]]; then
       ;;
   esac
 
-  chosen="$(basename "$candidate")"
+  # Keep the path relative to database_dumps/ so subdirectories work.
+  chosen="${resolved#$dumps_resolved/}"
 else
   display_status_message "Select a dump from database_dumps/:"
 
