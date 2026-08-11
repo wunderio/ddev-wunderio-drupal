@@ -81,7 +81,7 @@ fi
 # --- 3. Prepare dumps directory and warn about overwrite ---
 display_warning_message "This will overwrite your local database with data from '$SITE_ALIAS'."
 
-DUMPS_DIR="$PROJECT_ROOT/database_dumps"
+DUMPS_DIR="$(get_database_dumps_dir)"
 
 if [ ! -d "$DUMPS_DIR" ]; then
     mkdir -p "$DUMPS_DIR"
