@@ -15,7 +15,7 @@ fi
 # --- Sourcing Helper Functions ---
 source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
-DUMPS_DIR="$PROJECT_ROOT/database_dumps"
+DUMPS_DIR="$(get_database_dumps_dir)"
 NO_DEPLOY=false
 SELECTED_ARG=""
 

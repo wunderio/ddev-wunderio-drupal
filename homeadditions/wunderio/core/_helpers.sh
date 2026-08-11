@@ -36,3 +36,8 @@ display_warning_message() {
 
     printf "${color_yellow}${message}${color_reset}\n"
 }
+
+# Function to get the absolute path to the database_dumps/ directory.
+get_database_dumps_dir() {
+    echo "${PROJECT_ROOT}/database_dumps"
+}
