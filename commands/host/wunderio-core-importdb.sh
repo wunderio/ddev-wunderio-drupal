@@ -4,7 +4,7 @@
 
 ## Description: Import a local database dump from database_dumps/ (interactive picker).
 ## Usage: importdb
-## Example: "ddev importdb" "ddev importdb cleaned.sql.gz" "ddev importdb --no-deploy"
+## Example: "ddev importdb" "ddev importdb cleaned.sql.gz" "ddev importdb --no-deploy" "ddev importdb --skip-hooks"
 ## ExecRaw: true
 ## ProjectTypes: drupal9,drupal10,drupal11
 

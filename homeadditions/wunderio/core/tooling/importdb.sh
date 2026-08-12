@@ -17,22 +17,25 @@ source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
 DUMPS_DIR="$(get_database_dumps_dir)"
 NO_DEPLOY=false
+SKIP_HOOKS=false
 SELECTED_ARG=""
 
 # --- Parse arguments ---
 for arg in "$@"; do
   case "$arg" in
     --no-deploy) NO_DEPLOY=true ;;
+    --skip-hooks) SKIP_HOOKS=true ;;
     --help|-h)
-      display_status_message "Usage: ddev importdb [file] [--no-deploy]"
+      display_status_message "Usage: ddev importdb [file] [--no-deploy] [--skip-hooks]"
       display_warning_message "  (no args)     Interactively choose a dump from database_dumps/"
       display_warning_message "  file          Skip picker; use this dump (basename or path under dumps)"
       display_warning_message "  --no-deploy   Skip running drush deploy after import"
+      display_warning_message "  --skip-hooks  Skip all post-import hooks (sanitization and deploy)"
       exit 0
       ;;
     -*)
       display_error_message "Unknown option: $arg"
-      display_warning_message "Usage: ddev importdb [file] [--no-deploy]"
+      display_warning_message "Usage: ddev importdb [file] [--no-deploy] [--skip-hooks]"
       exit 1
       ;;
     *)
@@ -126,14 +129,18 @@ sql_file="$DUMPS_DIR/$chosen"
 display_warning_message "This will overwrite your local database with: $chosen"
 
 # Place marker file in the named volume so the post-import hook can read it.
-if [[ "$NO_DEPLOY" == "true" ]]; then
+if [[ "$NO_DEPLOY" == "true" && "$SKIP_HOOKS" != "true" ]]; then
   ddev exec sudo touch /mnt/wdr-hooks/.no-deploy
   trap 'ddev exec sudo rm -f /mnt/wdr-hooks/.no-deploy' EXIT
 fi
 
 display_status_message "Importing $sql_file ..."
 # ddev import-db natively handles .gz files.
-ddev import-db --file="$sql_file"
+import_db_args=(--file="$sql_file")
+if [[ "$SKIP_HOOKS" == "true" ]]; then
+  import_db_args+=(--skip-hooks)
+fi
+ddev import-db "${import_db_args[@]}"
 
 { set +x; } 2>/dev/null
 

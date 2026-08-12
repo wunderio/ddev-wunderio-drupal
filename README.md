@@ -145,6 +145,7 @@ This project uses [ddev-wunderio-drupal](https://github.com/wunderio/ddev-wunder
   ddev importdb                         # Pick a dump interactively
   ddev importdb cleaned.sql.gz          # Skip picker; import this file
   ddev importdb --no-deploy             # Skip running drush deploy after import
+  ddev importdb --skip-hooks            # Skip all post-import hooks (sanitize and deploy)
   ```
 
 - `yq`: Runs [yq](https://mikefarah.gitbook.io/yq) commands (YAML processor).
@@ -251,6 +252,7 @@ Or import a specific file directly:
 
 ```bash
 ddev importdb my-database-backup.sql.gz
+ddev importdb my-database-backup.sql.gz --skip-hooks
 # equivalent:
 ddev import-db --file=database_dumps/my-database-backup.sql.gz
 ```
