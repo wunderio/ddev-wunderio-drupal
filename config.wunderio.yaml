@@ -8,6 +8,9 @@ hooks:
     # the add-on is missing or a pre-0.5.0 version is installed. Versions 0.5.0
     # and later are checked for updates by host-post-start-update-check.sh.
     - exec-host: 'if [ ! -f "${DDEV_GLOBAL_DIR}/homeadditions/wunderio/core/wdr-core.sh" ]; then ddev add-on get wunderio/ddev-wunderio-drupal; fi'
+    # Remove old BackstopJS test runs (keeps the latest) so they don't pile up
+    # to gigabytes and Mutagen doesn't have to sync them.
+    - exec-host: '${DDEV_GLOBAL_DIR}/homeadditions/wunderio/core/wdr-core.sh hooks host-pre-start-backstop-cleanup.sh'
   post-start:
     # Build hook workaround to run composer install on first start.
     # @todo We could potentially make this work from recognizing the command.
@@ -39,3 +42,7 @@ upload_dirs:
   # Configure database_dumps directory to be bind-mounted directly
   # instead of being synced via Mutagen for better performance
   - ../database_dumps
+  # BackstopJS screenshots (ddev/ddev-backstopjs add-on). The backstop
+  # container mounts tests/backstop directly, so the web container doesn't
+  # need a Mutagen copy of these gigabytes.
+  - ../tests/backstop/backstop_data
