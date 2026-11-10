@@ -28,6 +28,8 @@ if ! [[ "$keep" =~ ^[0-9]+$ ]]; then
     display_warning_message "BACKSTOP_KEEP_TEST_RUNS must be a number, skipping Backstop cleanup."
     exit 0
 fi
+# Force base 10, otherwise bash treats e.g. "08" as an invalid octal number.
+keep=$((10#$keep))
 if [[ "$keep" -eq 0 ]]; then
     exit 0
 fi
