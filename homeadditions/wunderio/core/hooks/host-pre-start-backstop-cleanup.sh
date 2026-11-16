@@ -11,8 +11,11 @@
 #
 # Runs before start so Mutagen does not have to sync the old runs.
 #
-# Number of runs to keep can be changed with BACKSTOP_KEEP_TEST_RUNS
-# (default 1). Set it to 0 to disable the cleanup.
+# Settings (environment variables):
+#   BACKSTOP_CLEANUP          Set to "false" to disable the cleanup (default "true").
+#   BACKSTOP_KEEP_TEST_RUNS   Number of latest runs to keep, at least 1 (default 1).
+#                             The latest run is always kept because the HTML
+#                             report points to it.
 #
 
 set -eu
@@ -23,6 +26,17 @@ export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
 
 source "$WUNDERIO_GLOBAL_SCRIPT_ROOT/_helpers.sh"
 
+# Lowercase with tr, macOS ships bash 3.2 which has no ${var,,}.
+cleanup="$(printf '%s' "${BACKSTOP_CLEANUP:-true}" | tr '[:upper:]' '[:lower:]')"
+case "$cleanup" in
+    true | 1 | yes | on) ;;
+    false | 0 | no | off) exit 0 ;;
+    *)
+        display_warning_message "BACKSTOP_CLEANUP must be true or false, skipping Backstop cleanup."
+        exit 0
+        ;;
+esac
+
 keep="${BACKSTOP_KEEP_TEST_RUNS:-1}"
 if ! [[ "$keep" =~ ^[0-9]+$ ]]; then
     display_warning_message "BACKSTOP_KEEP_TEST_RUNS must be a number, skipping Backstop cleanup."
@@ -30,7 +44,8 @@ if ! [[ "$keep" =~ ^[0-9]+$ ]]; then
 fi
 # Force base 10, otherwise bash treats e.g. "08" as an invalid octal number.
 keep=$((10#$keep))
-if [[ "$keep" -eq 0 ]]; then
+if [[ "$keep" -lt 1 ]]; then
+    display_warning_message "BACKSTOP_KEEP_TEST_RUNS must be at least 1 (use BACKSTOP_CLEANUP=false to disable), skipping Backstop cleanup."
     exit 0
 fi
 
