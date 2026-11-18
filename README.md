@@ -261,3 +261,25 @@ ddev import-db --file=database_dumps/my-database-backup.sql.gz
 ```
 
 **Note:** On Linux (no Mutagen) this has no performance effect, but keeps dumps organized consistently across teams.
+
+### BackstopJS Screenshots
+
+Projects using the [ddev-backstopjs](https://github.com/ddev/ddev-backstopjs) add-on get a new timestamped folder in `tests/backstop/backstop_data/bitmaps_test/` on every `ddev backstop test` run, and BackstopJS never removes old ones. Over time this grows to gigabytes per project.
+
+This add-on handles it in two ways:
+
+1. **Old test runs are removed on `ddev start`.** A pre-start host hook keeps only the latest test run in every `tests/*/backstop_data/bitmaps_test/` folder. The HTML report only uses the latest run, and reference bitmaps (`bitmaps_reference`) are never touched, so the usual `reference` → deploy → `test` → `backstop-results` workflow is unaffected.
+
+   To keep more runs, set this in your shell profile (minimum `1`, the latest run is always kept because the HTML report uses it):
+
+   ```bash
+   export BACKSTOP_KEEP_TEST_RUNS=3
+   ```
+
+   To disable the cleanup:
+
+   ```bash
+   export BACKSTOP_CLEANUP=false
+   ```
+
+2. **`tests/backstop/backstop_data` is excluded from Mutagen** via `upload_dirs`. The backstop container mounts `tests/backstop` directly, so the web container doesn't need a synced copy. This saves disk space and speeds up `ddev start` on macOS.
